@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-01-14T10:37:18.989857",
+  "api_name": "pc_images_sample",
+  "endpoint": "/api/live-uuid/images",
+  "method": "POST",
+  "request_data": {
+    "pc_url": "https://test.com",
+    "account_uuid": "d5d24efd",
+    "use_sample_data": true
+  },
+  "response_data": {
+    "success": true,
+    "images": [
+      {
+        "uuid": "7a78581e-678b-4227-ba8e-6e22bf33db69",
+        "name": "TinyCoreLinuxGUI",
+        "image_type": "DISK_IMAGE",
+        "vmdisk_size": "104857600"
+      }
+    ],
+    "total_matches": 1,
+    "sample_data": true
+  },
+  "status_code": 200,
+  "error": null
+}

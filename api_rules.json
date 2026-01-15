@@ -1,0 +1,55 @@
+{
+  "/api/v3/runboook": {
+    "api_type": "runbook",
+    "rules": [],
+    "scalable_entities": [
+      "spec.resources.credential_definition_list",
+      "spec.resources.endpoint_definition_list",
+      "spec.resources.runbook.task_definition_list"
+    ],
+    "task_execution": "parallel",
+    "created_at": "d05032c4",
+    "has_template": true,
+    "template_file": "/Users/mohan.as1/Documents/payload-scaler/templates_store/runbook/_api_v3_runboook.json"
+  },
+  "blueprint": {
+    "api_type": "blueprint",
+    "rules": [],
+    "scalable_entities": [
+      "spec.resources.service_definition_list",
+      "spec.resources.service_definition_list.variable_list",
+      "spec.resources.service_definition_list.action_list",
+      "spec.resources.service_definition_list.action_list.runbook.variable_list",
+      "spec.resources.service_definition_list.action_list.runbook.task_definition_list",
+      "spec.resources.service_definition_list.action_list.runbook.task_definition_list.variable_list",
+      "spec.resources.credential_definition_list",
+      "spec.resources.substrate_definition_list",
+      "spec.resources.substrate_definition_list.variable_list",
+      "spec.resources.substrate_definition_list.action_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.disk_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.gpu_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.serial_port_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.nic_list",
+      "spec.resources.package_definition_list",
+      "spec.resources.package_definition_list.variable_list",
+      "spec.resources.package_definition_list.options.install_runbook.variable_list",
+      "spec.resources.package_definition_list.options.install_runbook.task_definition_list",
+      "spec.resources.package_definition_list.options.install_runbook.task_definition_list.variable_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.variable_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.task_definition_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.task_definition_list.variable_list",
+      "spec.resources.package_definition_list.service_local_reference_list",
+      "spec.resources.app_profile_list",
+      "spec.resources.app_profile_list.action_list",
+      "spec.resources.app_profile_list.variable_list",
+      "spec.resources.app_profile_list.deployment_create_list",
+      "spec.resources.app_profile_list.deployment_create_list.variable_list",
+      "spec.resources.app_profile_list.deployment_create_list.action_list",
+      "spec.resources.app_profile_list.deployment_create_list.package_local_reference_list"
+    ],
+    "task_execution": "parallel",
+    "created_at": "994369da",
+    "has_template": true,
+    "template_file": "/Users/mohan.as1/Documents/payload-scaler/templates_store/blueprint/blueprint.json"
+  }
+}

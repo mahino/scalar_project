@@ -1,0 +1,46 @@
+{
+  "name": "Runbook Default Rules",
+  "description": "Default rules applied to all runbook payloads",
+  "version": "1.0",
+  
+  "preserve_fields": [
+    {
+      "path": "spec.resources.default_target_reference.uuid",
+      "description": "Default endpoint reference - user input",
+      "reason": "User will provide endpoint UUID"
+    }
+  ],
+
+  "scalable_entities": [
+    {
+      "path": "spec.resources.credential_definition_list",
+      "description": "Credential definitions",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.endpoint_definition_list",
+      "description": "Endpoint definitions",
+      "default_count": 0,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.runbook.task_definition_list",
+      "description": "Task definitions (includes DAG + EXEC tasks)",
+      "default_count": 2,
+      "id_fields": ["uuid", "name"],
+      "notes": "Count includes 1 DAG task + N EXEC tasks. E.g., count=3 means 1 DAG + 2 EXEC tasks"
+    }
+  ],
+
+  "default_rules": [],
+
+  "notes": {
+    "handled_by_code": [
+      "DAG task child_tasks_local_reference_list = list of EXEC task UUIDs",
+      "main_task_local_reference.uuid = DAG task UUID",
+      "Task credential references use credential_definition_list UUIDs"
+    ]
+  }
+}
+

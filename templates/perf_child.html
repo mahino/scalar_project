@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perf Child Tab {{ tab_id }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .perf-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.9));
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999999;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .perf-overlay.recording {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .perf-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .perf-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .perf-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: blink 1.5s infinite;
+        }
+        
+        .status-dot.recording {
+            background: #fff;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .perf-metrics {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .perf-metric {
+            text-align: center;
+        }
+        
+        .perf-metric-value {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .perf-metric-label {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .content-frame {
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: none;
+        }
+        
+        .loading-state {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="perf-overlay" id="perfOverlay">
+        <div class="perf-info">
+            <span class="perf-badge">Child Tab {{ tab_id }}</span>
+            <div class="perf-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connected</span>
+            </div>
+        </div>
+        <div class="perf-metrics">
+            <div class="perf-metric">
+                <div class="perf-metric-value" id="metricPageLoad">-</div>
+                <div class="perf-metric-label">Page Load</div>
+            </div>
+            <div class="perf-metric">
+                <div class="perf-metric-value" id="metricFCP">-</div>
+                <div class="perf-metric-label">FCP</div>
+            </div>
+            <div class="perf-metric">
+                <div class="perf-metric-value" id="metricLCP">-</div>
+                <div class="perf-metric-label">LCP</div>
+            </div>
+            <div class="perf-metric">
+                <div class="perf-metric-value" id="metricLatency">-</div>
+                <div class="perf-metric-label">Latency</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <p>Connecting to parent...</p>
+        <p style="font-size: 12px; opacity: 0.7; margin-top: 8px;">Tab ID: {{ tab_id }}</p>
+    </div>
+    
+    <div class="child-content" id="childContent" style="display: none;">
+        <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">📡</div>
+            <h2 style="font-size: 24px; margin-bottom: 12px; color: #8b5cf6;">Child Tab {{ tab_id }}</h2>
+            <p style="font-size: 16px; opacity: 0.8; margin-bottom: 24px;">Connected to Performance Tester</p>
+            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px; max-width: 400px; margin: 0 auto;">
+                <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">This tab is listening for broadcast messages from the parent.</p>
+                <p style="font-size: 12px; opacity: 0.6;">Keep this tab open during testing. Messages will be received via BroadcastChannel.</p>
+            </div>
+            <div id="lastAction" style="margin-top: 24px; font-size: 12px; opacity: 0.5;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // Child Tab - BroadcastChannel Listener
+        // ============================================================================
+        
+        const TAB_ID = '{{ tab_id }}';
+        const TARGET_URL = '{{ target_url }}';
+        
+        // BroadcastChannel for cross-tab communication
+        const perfChannel = new BroadcastChannel('perf-tester-sync');
+        
+        // State
+        let isRecording = false;
+        let metrics = {
+            pageLoad: 0,
+            fcp: 0,
+            lcp: 0,
+            lastLatency: 0
+        };
+        
+        // Notify parent we're connected
+        function announceConnection() {
+            perfChannel.postMessage({
+                type: 'child-connected',
+                tabId: TAB_ID,
+                url: TARGET_URL || window.location.href
+            });
+            
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('statusText').textContent = 'Connected';
+        }
+        
+        // Handle messages from parent
+        perfChannel.onmessage = (event) => {
+            const msg = event.data;
+            
+            switch (msg.type) {
+                case 'ping':
+                    handlePing(msg);
+                    break;
+                case 'navigate':
+                    handleNavigate(msg);
+                    break;
+                case 'click':
+                    handleClick(msg);
+                    break;
+                case 'scroll':
+                    handleScroll(msg);
+                    break;
+                case 'type':
+                    handleType(msg);
+                    break;
+                case 'start-recording':
+                    startRecording();
+                    break;
+                case 'stop-recording':
+                    stopRecording();
+                    break;
+            }
+        };
+        
+        function handlePing(msg) {
+            perfChannel.postMessage({
+                type: 'pong',
+                tabId: TAB_ID,
+                pingTime: msg.pingTime
+            });
+            showLastAction('Ping received');
+        }
+        
+        function handleNavigate(msg) {
+            perfChannel.postMessage({
+                type: 'action-ack',
+                tabId: TAB_ID,
+                action: 'navigate',
+                sentTime: msg.sentTime
+            });
+            showLastAction('Navigate: ' + (msg.url || 'unknown'));
+        }
+        
+        function handleClick(msg) {
+            perfChannel.postMessage({
+                type: 'action-ack',
+                tabId: TAB_ID,
+                action: 'click',
+                sentTime: msg.sentTime
+            });
+            showLastAction('Click: ' + (msg.selector || 'unknown'));
+        }
+        
+        function handleScroll(msg) {
+            perfChannel.postMessage({
+                type: 'action-ack',
+                tabId: TAB_ID,
+                action: 'scroll',
+                sentTime: msg.sentTime
+            });
+            showLastAction('Scroll: ' + (msg.deltaY || 0) + 'px');
+        }
+        
+        function handleType(msg) {
+            perfChannel.postMessage({
+                type: 'action-ack',
+                tabId: TAB_ID,
+                action: 'type',
+                sentTime: msg.sentTime
+            });
+            showLastAction('Type: ' + (msg.text || '').substring(0, 20));
+        }
+        
+        function startRecording() {
+            isRecording = true;
+            document.getElementById('perfOverlay').classList.add('recording');
+            document.getElementById('statusDot').classList.add('recording');
+            document.getElementById('statusText').textContent = 'Recording';
+            showLastAction('Recording started');
+            
+            // Start collecting performance metrics
+            collectPerformanceMetrics();
+        }
+        
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('perfOverlay').classList.remove('recording');
+            document.getElementById('statusDot').classList.remove('recording');
+            document.getElementById('statusText').textContent = 'Connected';
+            showLastAction('Recording stopped');
+        }
+        
+        function reportError(error) {
+            perfChannel.postMessage({
+                type: 'error',
+                tabId: TAB_ID,
+                error: error
+            });
+        }
+        
+        // ============================================================================
+        // Performance Metrics Collection
+        // ============================================================================
+        
+        function collectPerformanceMetrics() {
+            // Page load timing
+            if (performance.timing) {
+                const timing = performance.timing;
+                metrics.pageLoad = timing.loadEventEnd - timing.navigationStart;
+                if (metrics.pageLoad > 0) {
+                    document.getElementById('metricPageLoad').textContent = metrics.pageLoad + 'ms';
+                }
+            }
+            
+            // Use PerformanceObserver for paint metrics
+            try {
+                // First Contentful Paint
+                const paintEntries = performance.getEntriesByType('paint');
+                paintEntries.forEach(entry => {
+                    if (entry.name === 'first-contentful-paint') {
+                        metrics.fcp = Math.round(entry.startTime);
+                        document.getElementById('metricFCP').textContent = metrics.fcp + 'ms';
+                    }
+                });
+                
+                // Largest Contentful Paint - use observer
+                const lcpObserver = new PerformanceObserver((list) => {
+                    const entries = list.getEntries();
+                    const lastEntry = entries[entries.length - 1];
+                    if (lastEntry) {
+                        metrics.lcp = Math.round(lastEntry.startTime);
+                        document.getElementById('metricLCP').textContent = metrics.lcp + 'ms';
+                        reportMetrics();
+                    }
+                });
+                lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+                
+            } catch (e) {
+                console.log('PerformanceObserver not supported:', e);
+            }
+            
+            // Report metrics to parent after a delay
+            setTimeout(reportMetrics, 2000);
+        }
+        
+        function reportMetrics() {
+            perfChannel.postMessage({
+                type: 'metrics-report',
+                tabId: TAB_ID,
+                metrics: {
+                    pageLoad: metrics.pageLoad,
+                    fcp: metrics.fcp,
+                    lcp: metrics.lcp
+                }
+            });
+        }
+        
+        // ============================================================================
+        // Initialize
+        // ============================================================================
+        
+        // Announce connection when page loads
+        window.addEventListener('load', () => {
+            announceConnection();
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('childContent').style.display = 'block';
+            document.getElementById('statusText').textContent = 'Connected - Ready';
+        });
+        
+        // Show last action in UI
+        function showLastAction(action) {
+            document.getElementById('lastAction').textContent = 'Last action: ' + action + ' at ' + new Date().toLocaleTimeString();
+        }
+        
+        // Also announce on DOMContentLoaded for faster response
+        document.addEventListener('DOMContentLoaded', () => {
+            announceConnection();
+        });
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            perfChannel.postMessage({
+                type: 'child-disconnected',
+                tabId: TAB_ID
+            });
+        });
+        
+        // Heartbeat - ping parent periodically
+        setInterval(() => {
+            perfChannel.postMessage({
+                type: 'child-connected',
+                tabId: TAB_ID,
+                url: window.location.href
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
+

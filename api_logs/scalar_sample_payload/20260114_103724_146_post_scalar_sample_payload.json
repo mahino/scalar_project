@@ -1,0 +1,131 @@
+{
+  "timestamp": "2026-01-14T10:37:24.147204",
+  "api_name": "scalar_sample_payload",
+  "endpoint": "/api/test/sample-payload",
+  "method": "POST",
+  "request_data": {},
+  "response_data": {
+    "success": true,
+    "sample_payload": {
+      "spec": {
+        "name": "sample_blueprint_with_tinycorelinux",
+        "resources": {
+          "service_definition_list": [
+            {
+              "name": "TinyCoreLinux_Service",
+              "port_list": [],
+              "service_type": "USER",
+              "container_spec": {},
+              "action_list": [],
+              "variable_list": [],
+              "singleton": false
+            }
+          ],
+          "substrate_definition_list": [
+            {
+              "name": "TinyCoreLinux_Substrate",
+              "description": "Sample substrate with TinyCoreLinuxGUI image",
+              "type": "AHV_VM",
+              "os_type": "Linux",
+              "create_spec": {
+                "type": "",
+                "cluster_reference": {
+                  "type": "",
+                  "kind": "cluster",
+                  "name": "auto_cluster_prod_bhavani_shankar_f63f1435bec9",
+                  "uuid": "000641b9-5e10-4d2e-7faf-ac1f6b61e0cf"
+                },
+                "resources": {
+                  "account_uuid": "d5d24efd",
+                  "disk_list": [
+                    {
+                      "type": "",
+                      "data_source_reference": {
+                        "type": "",
+                        "kind": "image",
+                        "name": "TinyCoreLinuxGUI",
+                        "uuid": "7a78581e-678b-4227-ba8e-6e22bf33db69"
+                      },
+                      "volume_group_reference": null,
+                      "device_properties": {
+                        "type": "",
+                        "disk_address": {
+                          "type": "",
+                          "device_index": 0,
+                          "adapter_type": "SCSI"
+                        }
+                      }
+                    }
+                  ],
+                  "nic_list": [
+                    {
+                      "type": "",
+                      "nic_type": "NORMAL_NIC",
+                      "subnet_reference": {
+                        "type": "",
+                        "kind": "subnet",
+                        "name": "",
+                        "uuid": "dd59dac1-9bc4-4955-b310-b1883dfb550d"
+                      },
+                      "network_function_nic_type": "INGRESS",
+                      "mac_address": "",
+                      "ip_endpoint_list": [],
+                      "network_function_chain_reference": null,
+                      "vpc_reference": null
+                    }
+                  ],
+                  "num_vcpus_per_socket": 1,
+                  "num_sockets": 1,
+                  "memory_size_mib": 1024,
+                  "guest_tools": {
+                    "type": "",
+                    "nutanix_guest_tools": {
+                      "type": "",
+                      "state": "ENABLED",
+                      "iso_mount_state": "MOUNTED"
+                    }
+                  },
+                  "power_state": "ON",
+                  "hardware_clock_timezone": "UTC",
+                  "guest_customization": {
+                    "type": "",
+                    "cloud_init": {
+                      "type": "",
+                      "user_data": ""
+                    },
+                    "is_overridable": false
+                  }
+                }
+              },
+              "readiness_probe": {
+                "type": "",
+                "connection_type": "SSH",
+                "connection_port": 22,
+                "connection_protocol": "",
+                "timeout_secs": 60,
+                "delay_secs": 60
+              }
+            }
+          ],
+          "app_profile_list": [
+            {
+              "name": "TinyCoreLinux_Profile",
+              "description": "Sample profile for TinyCoreLinux",
+              "environment_reference_list": [
+                "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+              ],
+              "uuid": "fb9a6823-b0a3-f837-a7f8-548e908ec071"
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "kind": "blueprint",
+        "name": "sample_blueprint_with_tinycorelinux"
+      }
+    },
+    "description": "Sample payload using TinyCoreLinuxGUI image and provided UUIDs"
+  },
+  "status_code": 200,
+  "error": null
+}

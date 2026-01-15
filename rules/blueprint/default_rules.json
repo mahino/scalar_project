@@ -1,0 +1,162 @@
+{
+  "name": "Blueprint Default Rules",
+  "description": "Default rules applied to all blueprint payloads",
+  "version": "2.0",
+  
+  "preserve_fields": [
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.cluster_reference.uuid",
+      "description": "Cluster reference - user input",
+      "reason": "User will provide cluster UUID"
+    },
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.resources.account_uuid",
+      "description": "Account UUID - user input",
+      "reason": "User will provide account UUID"
+    },
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.resources.disk_list.uuid",
+      "description": "Disk UUIDs - user input",
+      "reason": "Keep original disk UUIDs"
+    },
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.resources.nic_list.uuid",
+      "description": "NIC UUIDs - user input",
+      "reason": "Keep original NIC UUIDs"
+    },
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.resources.disk_list.data_source_reference.uuid",
+      "description": "Image/Disk source UUID - user input",
+      "reason": "Keep original image UUIDs"
+    },
+    {
+      "path": "spec.resources.substrate_definition_list.create_spec.resources.nic_list.subnet_reference.uuid",
+      "description": "Subnet UUID - user input",
+      "reason": "Keep original subnet UUIDs"
+    }
+  ],
+
+  "cross_entity_mappings": [
+    {
+      "description": "Package UUID -> All app_package references",
+      "source": "spec.resources.package_definition_list.uuid",
+      "targets": [
+        "spec.resources.app_profile_list.deployment_create_list.package_local_reference_list.uuid",
+        "spec.resources.package_definition_list.options.install_runbook.task_definition_list.target_any_local_reference.uuid",
+        "spec.resources.package_definition_list.options.uninstall_runbook.task_definition_list.target_any_local_reference.uuid",
+        "*.target_any_local_reference.uuid (where kind=app_package)"
+      ],
+      "mapping_type": "one_to_many"
+    },
+    {
+      "description": "Service UUID -> All app_service references",
+      "source": "spec.resources.service_definition_list.uuid",
+      "targets": [
+        "spec.resources.package_definition_list.service_local_reference_list.uuid",
+        "spec.resources.service_definition_list.action_list.runbook.task_definition_list.target_any_local_reference.uuid",
+        "*.target_any_local_reference.uuid (where kind=app_service)",
+        "*.service_local_reference_list.uuid"
+      ],
+      "mapping_type": "one_to_many"
+    },
+    {
+      "description": "Substrate UUID -> All app_substrate references",
+      "source": "spec.resources.substrate_definition_list.uuid",
+      "targets": [
+        "spec.resources.app_profile_list.deployment_create_list.substrate_local_reference.uuid",
+        "*.substrate_local_reference.uuid (where kind=app_substrate)"
+      ],
+      "mapping_type": "one_to_many"
+    },
+    {
+      "description": "Credential UUID -> All app_credential references",
+      "source": "spec.resources.credential_definition_list.uuid",
+      "targets": [
+        "spec.resources.substrate_definition_list.readiness_probe.login_credential_local_reference.uuid",
+        "spec.resources.substrate_definition_list.create_spec.resources.guest_customization.cloud_init.user_data.default_credential_local_reference.uuid",
+        "*.default_credential_local_reference.uuid (where kind=app_credential)",
+        "*.login_credential_local_reference.uuid (where kind=app_credential)"
+      ],
+      "mapping_type": "one_to_many"
+    },
+    {
+      "description": "Deployment UUID -> client_attrs keys",
+      "source": "spec.resources.app_profile_list.deployment_create_list.uuid",
+      "targets": [
+        "spec.resources.app_profile_list.client_attrs (keys)"
+      ],
+      "mapping_type": "deployment_to_client_attrs"
+    }
+  ],
+
+  "default_rules": [],
+
+  "scalable_entities": [
+    {
+      "path": "spec.resources.service_definition_list",
+      "description": "Service definitions",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.substrate_definition_list",
+      "description": "Substrate/VM definitions",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.package_definition_list",
+      "description": "Package definitions",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.credential_definition_list",
+      "description": "Credential definitions",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.app_profile_list",
+      "description": "Application profiles",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    },
+    {
+      "path": "spec.resources.app_profile_list.deployment_create_list",
+      "description": "Deployments",
+      "default_count": 1,
+      "id_fields": ["uuid", "name"]
+    }
+  ],
+
+  "notes": {
+    "handled_by_code": [
+      "✅ ALL app_package references -> package_definition_list.uuid",
+      "✅ ALL app_service references -> service_definition_list.uuid", 
+      "✅ ALL app_substrate references -> substrate_definition_list.uuid",
+      "✅ ALL app_credential references -> credential_definition_list.uuid",
+      "✅ client_attrs keys -> deployment_create_list.uuid",
+      "✅ target_any_local_reference.uuid (all kinds)",
+      "✅ package_local_reference_list.uuid",
+      "✅ service_local_reference_list.uuid",
+      "✅ substrate_local_reference.uuid",
+      "✅ default_credential_local_reference.uuid",
+      "✅ login_credential_local_reference.uuid"
+    ],
+    "preserved_by_live_uuid_config": [
+      "cluster_reference.uuid (user selected)",
+      "environment_reference.uuid (user selected)",
+      "account_reference.uuid (user selected)",
+      "subnet_reference.uuid (user selected)",
+      "data_source_reference.uuid (user selected image)",
+      "project_reference.uuid (user selected)"
+    ],
+    "generated_unique": [
+      "package install_runbook.uuid",
+      "package uninstall_runbook.uuid",
+      "service action_list runbook.uuid",
+      "task_definition_list.uuid (individual tasks)"
+    ]
+  }
+}

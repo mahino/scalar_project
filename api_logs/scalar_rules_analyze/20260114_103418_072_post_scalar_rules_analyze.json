@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-01-14T10:34:18.073306",
+  "api_name": "scalar_rules_analyze",
+  "endpoint": "/api/rules/analyze",
+  "method": "POST",
+  "request_data": {
+    "payload": "{\"metadata\": {\"kind\": \"blueprint\"}}",
+    "api_type": "blueprint"
+  },
+  "response_data": {
+    "success": true,
+    "entities": [],
+    "original_payload": {
+      "metadata": {
+        "kind": "blueprint"
+      }
+    },
+    "scalable_entity_paths": [],
+    "reference_map": {},
+    "detected_api_type": "blueprint"
+  },
+  "status_code": 200,
+  "error": null
+}

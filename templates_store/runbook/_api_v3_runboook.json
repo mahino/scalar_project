@@ -1,0 +1,115 @@
+{
+  "api_url": "/api/v3/runboook",
+  "api_type": "runbook",
+  "payload_template": {
+    "api_version": "3.0",
+    "metadata": {
+      "kind": "runbook",
+      "project_reference": {
+        "kind": "project",
+        "name": "nucalm",
+        "uuid": "1be20d09-b544-430d-9363-6b5ff49c8365"
+      },
+      "uuid": "38d629af-afb5-bde7-d74b-bcbd9dfc1762"
+    },
+    "spec": {
+      "name": "trgfwads",
+      "resources": {
+        "credential_definition_list": [
+          {
+            "cred_class": "static",
+            "name": "admin",
+            "secret": {
+              "attrs": {
+                "is_secret_modified": true
+              },
+              "value": "nutanix/4u"
+            },
+            "type": "PASSWORD",
+            "username": "root",
+            "uuid": "f948e705-e4b7-cafd-2fda-8b533ec2b3f9"
+          }
+        ],
+        "default_target_reference": {
+          "kind": "app_endpoint",
+          "name": "Ep_test1",
+          "uuid": "6fd89325-0470-10bc-261c-723221c21c4d"
+        },
+        "endpoint_definition_list": [],
+        "runbook": {
+          "main_task_local_reference": {
+            "kind": "app_task",
+            "uuid": "252658e6-41fd-12f1-7194-b318c4dc8c1d"
+          },
+          "name": "15bac717_runbook",
+          "task_definition_list": [
+            {
+              "attrs": {
+                "edges": [
+                  {
+                    "from_task_reference": {
+                      "kind": "app_task",
+                      "uuid": "ea25bdda-a407-2b4a-e11e-28bf4cf59d19"
+                    },
+                    "to_task_reference": {
+                      "kind": "app_task",
+                      "uuid": "0ca134bb-0076-8618-585c-e7aa26eb8de3"
+                    },
+                    "uuid": "8f09c816-853b-d9ea-4483-58a4b96abf6a"
+                  }
+                ]
+              },
+              "child_tasks_local_reference_list": [
+                {
+                  "kind": "app_task",
+                  "uuid": "ea25bdda-a407-2b4a-e11e-28bf4cf59d19"
+                },
+                {
+                  "kind": "app_task",
+                  "uuid": "0ca134bb-0076-8618-585c-e7aa26eb8de3"
+                }
+              ],
+              "name": "3ad69d2a_dag",
+              "type": "DAG",
+              "uuid": "252658e6-41fd-12f1-7194-b318c4dc8c1d"
+            },
+            {
+              "attrs": {
+                "login_credential_local_reference": {
+                  "kind": "app_credential",
+                  "uuid": "f948e705-e4b7-cafd-2fda-8b533ec2b3f9"
+                },
+                "script": "date",
+                "script_type": "sh"
+              },
+              "child_tasks_local_reference_list": [],
+              "name": "Task 1",
+              "status_map_list": [],
+              "type": "EXEC",
+              "uuid": "ea25bdda-a407-2b4a-e11e-28bf4cf59d19",
+              "variable_list": []
+            },
+            {
+              "attrs": {
+                "login_credential_local_reference": {
+                  "kind": "app_credential",
+                  "uuid": "f948e705-e4b7-cafd-2fda-8b533ec2b3f9"
+                },
+                "script": "date",
+                "script_type": "sh"
+              },
+              "child_tasks_local_reference_list": [],
+              "name": "Task 2",
+              "status_map_list": [],
+              "type": "EXEC",
+              "uuid": "0ca134bb-0076-8618-585c-e7aa26eb8de3",
+              "variable_list": []
+            }
+          ],
+          "uuid": "1749b1c0-f6fe-0a31-fd3e-3b1c8232a7ec",
+          "variable_list": []
+        }
+      }
+    }
+  }
+}

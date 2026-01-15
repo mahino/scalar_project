@@ -1,0 +1,456 @@
+{
+  "timestamp": "2026-01-14T14:28:48.956880",
+  "api_name": "scalar_rules_save",
+  "endpoint": "/api/rules/save",
+  "method": "POST",
+  "request_data": {
+    "api_url": "blueprint",
+    "api_type": "blueprint",
+    "rules": [],
+    "payload_template": {
+      "api_version": "3.0",
+      "metadata": {
+        "categories": {},
+        "kind": "blueprint",
+        "project_reference": {
+          "kind": "project",
+          "uuid": "e4bb45fd-e89c-4282-aae5-17e6241022a0"
+        },
+        "uuid": "1c599629-7e3d-7c08-930c-31eb97806f84"
+      },
+      "spec": {
+        "name": "tesadf",
+        "resources": {
+          "app_profile_list": [
+            {
+              "action_list": [],
+              "deployment_create_list": [
+                {
+                  "action_list": [],
+                  "default_replicas": "1",
+                  "max_replicas": "1",
+                  "min_replicas": "1",
+                  "name": "deployment_54b0c31b",
+                  "package_local_reference_list": [
+                    {
+                      "kind": "app_package",
+                      "uuid": "77a0771d-7185-c6b0-e30b-acd2fa0062cd"
+                    }
+                  ],
+                  "substrate_local_reference": {
+                    "kind": "app_substrate",
+                    "uuid": "4ffa88a2-4549-d0e7-c91d-992d2e8a65bd"
+                  },
+                  "type": "GREENFIELD",
+                  "uuid": "9139f783-e8c4-288c-4ef9-6309924f7aec",
+                  "variable_list": []
+                }
+              ],
+              "environment_reference_list": [
+                "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+              ],
+              "name": "Default",
+              "uuid": "ebb9bffc-7fd0-073e-3743-c7e276a38223",
+              "variable_list": []
+            }
+          ],
+          "client_attrs": {
+            "9139f783-e8c4-288c-4ef9-6309924f7aec": {
+              "x": 153.5,
+              "y": 354.5
+            }
+          },
+          "credential_definition_list": [
+            {
+              "cred_class": "static",
+              "name": "admin",
+              "secret": {
+                "attrs": {
+                  "is_secret_modified": true
+                },
+                "value": "nutanix/4u"
+              },
+              "type": "PASSWORD",
+              "username": "root",
+              "uuid": "723dc019-e859-1910-307a-a642f16cc49b"
+            }
+          ],
+          "default_credential_local_reference": {
+            "kind": "app_credential",
+            "name": "default_credential",
+            "uuid": "723dc019-e859-1910-307a-a642f16cc49b"
+          },
+          "package_definition_list": [
+            {
+              "name": "Package1",
+              "options": {
+                "install_runbook": {
+                  "main_task_local_reference": {
+                    "kind": "app_task",
+                    "uuid": "d7660f3e-589b-c246-7a25-bac68aec3726"
+                  },
+                  "name": "923ece73_runbook",
+                  "task_definition_list": [
+                    {
+                      "attrs": {
+                        "edges": []
+                      },
+                      "child_tasks_local_reference_list": [],
+                      "name": "2a56b434_dag",
+                      "target_any_local_reference": {
+                        "kind": "app_package",
+                        "uuid": "77a0771d-7185-c6b0-e30b-acd2fa0062cd"
+                      },
+                      "type": "DAG",
+                      "uuid": "d7660f3e-589b-c246-7a25-bac68aec3726",
+                      "variable_list": []
+                    }
+                  ],
+                  "uuid": "65fc9732-8dde-d829-5dac-111a3fa0489b",
+                  "variable_list": []
+                },
+                "uninstall_runbook": {
+                  "main_task_local_reference": {
+                    "kind": "app_task",
+                    "uuid": "722e9f20-f41c-b0f1-f91b-79fb0319c3be"
+                  },
+                  "name": "c9f3be49_runbook",
+                  "task_definition_list": [
+                    {
+                      "attrs": {
+                        "edges": []
+                      },
+                      "child_tasks_local_reference_list": [],
+                      "name": "54b5f2d3_dag",
+                      "target_any_local_reference": {
+                        "kind": "app_package",
+                        "uuid": "77a0771d-7185-c6b0-e30b-acd2fa0062cd"
+                      },
+                      "type": "DAG",
+                      "uuid": "722e9f20-f41c-b0f1-f91b-79fb0319c3be",
+                      "variable_list": []
+                    }
+                  ],
+                  "uuid": "3b80e9a5-b2e7-4e65-dd59-fc663c1656ea",
+                  "variable_list": []
+                }
+              },
+              "service_local_reference_list": [
+                {
+                  "kind": "app_service",
+                  "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                }
+              ],
+              "type": "DEB",
+              "uuid": "77a0771d-7185-c6b0-e30b-acd2fa0062cd",
+              "variable_list": []
+            }
+          ],
+          "published_service_definition_list": [],
+          "service_definition_list": [
+            {
+              "action_list": [
+                {
+                  "name": "action_create",
+                  "runbook": {
+                    "main_task_local_reference": {
+                      "kind": "app_task",
+                      "uuid": "2c6bafc2-6e50-7762-9ba7-61f99872f1bd"
+                    },
+                    "name": "11380e00_runbook",
+                    "task_definition_list": [
+                      {
+                        "attrs": {
+                          "edges": []
+                        },
+                        "child_tasks_local_reference_list": [],
+                        "name": "685bdc97_dag",
+                        "target_any_local_reference": {
+                          "kind": "app_service",
+                          "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                        },
+                        "type": "DAG",
+                        "uuid": "2c6bafc2-6e50-7762-9ba7-61f99872f1bd",
+                        "variable_list": []
+                      }
+                    ],
+                    "uuid": "9af35977-3654-14c5-3834-fe050ad83095",
+                    "variable_list": []
+                  },
+                  "type": "system",
+                  "uuid": "8b42985a-f610-f92e-aac9-f53ee0309925"
+                },
+                {
+                  "name": "action_delete",
+                  "runbook": {
+                    "main_task_local_reference": {
+                      "kind": "app_task",
+                      "uuid": "c2a9e175-4ed9-a2ee-7ac4-cc96c384ce9f"
+                    },
+                    "name": "087b82f6_runbook",
+                    "task_definition_list": [
+                      {
+                        "attrs": {
+                          "edges": []
+                        },
+                        "child_tasks_local_reference_list": [],
+                        "name": "b655237d_dag",
+                        "target_any_local_reference": {
+                          "kind": "app_service",
+                          "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                        },
+                        "type": "DAG",
+                        "uuid": "c2a9e175-4ed9-a2ee-7ac4-cc96c384ce9f",
+                        "variable_list": []
+                      }
+                    ],
+                    "uuid": "c9be40f9-2010-3d08-d0d9-43a6d6bda8c6",
+                    "variable_list": []
+                  },
+                  "type": "system",
+                  "uuid": "c3508c7f-1f68-bfc4-c6f3-491574d5afaa"
+                },
+                {
+                  "name": "action_start",
+                  "runbook": {
+                    "main_task_local_reference": {
+                      "kind": "app_task",
+                      "uuid": "19d95b24-6f96-083e-6cea-93757c64ff95"
+                    },
+                    "name": "1f0c67b6_runbook",
+                    "task_definition_list": [
+                      {
+                        "attrs": {
+                          "edges": []
+                        },
+                        "child_tasks_local_reference_list": [],
+                        "name": "d02421ed_dag",
+                        "target_any_local_reference": {
+                          "kind": "app_service",
+                          "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                        },
+                        "type": "DAG",
+                        "uuid": "19d95b24-6f96-083e-6cea-93757c64ff95",
+                        "variable_list": []
+                      }
+                    ],
+                    "uuid": "cdfa2146-4bcd-2804-b7de-5311b9d9ee9e",
+                    "variable_list": []
+                  },
+                  "type": "system",
+                  "uuid": "4391f2ea-ef4e-3f94-0e28-b4ce7e3be68d"
+                },
+                {
+                  "name": "action_stop",
+                  "runbook": {
+                    "main_task_local_reference": {
+                      "kind": "app_task",
+                      "uuid": "37bfd524-deff-43ff-15a1-c1ae3c27b9d8"
+                    },
+                    "name": "fa63e020_runbook",
+                    "task_definition_list": [
+                      {
+                        "attrs": {
+                          "edges": []
+                        },
+                        "child_tasks_local_reference_list": [],
+                        "name": "9abc4f3a_dag",
+                        "target_any_local_reference": {
+                          "kind": "app_service",
+                          "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                        },
+                        "type": "DAG",
+                        "uuid": "37bfd524-deff-43ff-15a1-c1ae3c27b9d8",
+                        "variable_list": []
+                      }
+                    ],
+                    "uuid": "7add7318-1368-e944-bd99-b84b728f50a1",
+                    "variable_list": []
+                  },
+                  "type": "system",
+                  "uuid": "7ff2e394-640f-94f6-26c5-a66c2073f623"
+                },
+                {
+                  "name": "action_restart",
+                  "runbook": {
+                    "main_task_local_reference": {
+                      "kind": "app_task",
+                      "uuid": "9c9e4180-1e79-d694-e880-b835834ebe13"
+                    },
+                    "name": "57d17631_runbook",
+                    "task_definition_list": [
+                      {
+                        "attrs": {
+                          "edges": []
+                        },
+                        "child_tasks_local_reference_list": [],
+                        "name": "a354526e_dag",
+                        "target_any_local_reference": {
+                          "kind": "app_service",
+                          "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf"
+                        },
+                        "type": "DAG",
+                        "uuid": "9c9e4180-1e79-d694-e880-b835834ebe13",
+                        "variable_list": []
+                      }
+                    ],
+                    "uuid": "6e16bbba-cdb8-fe04-210f-c61e2ec6aa7d",
+                    "variable_list": []
+                  },
+                  "type": "system",
+                  "uuid": "fffd38df-b148-8715-10e5-7e8dc033b6b2"
+                }
+              ],
+              "depends_on_list": [],
+              "name": "Service1",
+              "port_list": [],
+              "uuid": "859ad6a4-be63-c06a-91cf-18e326a7c1bf",
+              "variable_list": []
+            }
+          ],
+          "substrate_definition_list": [
+            {
+              "action_list": [],
+              "create_spec": {
+                "availability_zone_reference": null,
+                "backup_policy": null,
+                "categories": {},
+                "cluster_reference": {
+                  "name": "ST_INTEROP_HOME_PE_e918d7c3ec49",
+                  "uuid": "000641b9-6ca7-bd34-1324-ac1f6b61e0e2"
+                },
+                "name": "vm-@@{calm_array_index}@@-@@{calm_time}@@",
+                "resources": {
+                  "account_uuid": "fc39abbe-cee7-4531-b79d-4e425fb58f46",
+                  "boot_config": {
+                    "boot_device": {
+                      "disk_address": {
+                        "adapter_type": "SCSI",
+                        "device_index": 0,
+                        "type": ""
+                      },
+                      "type": ""
+                    },
+                    "boot_type": "LEGACY",
+                    "mac_address": "",
+                    "type": ""
+                  },
+                  "disk_list": [
+                    {
+                      "data_source_reference": {
+                        "kind": "image",
+                        "name": "tiny_vm_image",
+                        "type": "",
+                        "uuid": "7a78581e-678b-4227-ba8e-6e22bf33db69"
+                      },
+                      "device_properties": {
+                        "device_type": "DISK",
+                        "disk_address": {
+                          "adapter_type": "SCSI",
+                          "device_index": 0,
+                          "type": ""
+                        },
+                        "type": ""
+                      },
+                      "disk_size_mib": 256,
+                      "type": "",
+                      "volume_group_reference": null
+                    }
+                  ],
+                  "gpu_list": [],
+                  "guest_customization": null,
+                  "guest_tools": null,
+                  "hardware_clock_timezone": "",
+                  "memory_size_mib": 256,
+                  "nic_list": [
+                    {
+                      "mac_address": "",
+                      "network_function_chain_reference": null,
+                      "network_function_nic_type": "INGRESS",
+                      "nic_type": "NORMAL_NIC",
+                      "subnet_reference": {
+                        "uuid": "4aca4159-548f-4be2-a0d0-bd292c912af4"
+                      },
+                      "type": ""
+                    }
+                  ],
+                  "num_sockets": 1,
+                  "num_vcpus_per_socket": 1,
+                  "parent_reference": null,
+                  "power_state": "ON",
+                  "serial_port_list": [],
+                  "type": "",
+                  "vtpm_config": null
+                },
+                "type": ""
+              },
+              "description": "",
+              "editables": {},
+              "name": "VM1",
+              "os_type": "Linux",
+              "readiness_probe": {
+                "address": "@@{platform.status.resources.nic_list[0].ip_endpoint_list[0].ip}@@",
+                "connection_port": 22,
+                "connection_protocol": "",
+                "connection_type": "SSH",
+                "delay_secs": "0",
+                "disable_readiness_probe": true,
+                "login_credential_local_reference": {
+                  "kind": "app_credential",
+                  "uuid": "723dc019-e859-1910-307a-a642f16cc49b"
+                },
+                "retries": "5"
+              },
+              "type": "AHV_VM",
+              "uuid": "4ffa88a2-4549-d0e7-c91d-992d2e8a65bd",
+              "variable_list": []
+            }
+          ],
+          "type": "USER"
+        }
+      }
+    },
+    "scalable_entities": [
+      "spec.resources.service_definition_list",
+      "spec.resources.service_definition_list.variable_list",
+      "spec.resources.service_definition_list.action_list",
+      "spec.resources.service_definition_list.action_list.runbook.variable_list",
+      "spec.resources.service_definition_list.action_list.runbook.task_definition_list",
+      "spec.resources.service_definition_list.action_list.runbook.task_definition_list.variable_list",
+      "spec.resources.credential_definition_list",
+      "spec.resources.substrate_definition_list",
+      "spec.resources.substrate_definition_list.variable_list",
+      "spec.resources.substrate_definition_list.action_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.disk_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.gpu_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.serial_port_list",
+      "spec.resources.substrate_definition_list.create_spec.resources.nic_list",
+      "spec.resources.package_definition_list",
+      "spec.resources.package_definition_list.variable_list",
+      "spec.resources.package_definition_list.options.install_runbook.variable_list",
+      "spec.resources.package_definition_list.options.install_runbook.task_definition_list",
+      "spec.resources.package_definition_list.options.install_runbook.task_definition_list.variable_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.variable_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.task_definition_list",
+      "spec.resources.package_definition_list.options.uninstall_runbook.task_definition_list.variable_list",
+      "spec.resources.package_definition_list.service_local_reference_list",
+      "spec.resources.app_profile_list",
+      "spec.resources.app_profile_list.action_list",
+      "spec.resources.app_profile_list.variable_list",
+      "spec.resources.app_profile_list.deployment_create_list",
+      "spec.resources.app_profile_list.deployment_create_list.variable_list",
+      "spec.resources.app_profile_list.deployment_create_list.action_list",
+      "spec.resources.app_profile_list.deployment_create_list.package_local_reference_list"
+    ],
+    "task_execution": "parallel",
+    "save_history": true
+  },
+  "response_data": {
+    "success": true,
+    "message": "Entity saved: blueprint",
+    "note": "Entity counts are not persisted - they are runtime-only",
+    "history_saved": true
+  },
+  "status_code": 200,
+  "error": null
+}

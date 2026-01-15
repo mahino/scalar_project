@@ -1,0 +1,579 @@
+project_list:
+
+in any entity project_reference field appears, you can use the following payload to get the project list:
+"project_reference": {
+          "kind": "project",
+          "uuid": "11bb25db-fe15-4839-b553-1e6a759f0421"
+        },
+trigger below payload to get project list:
+https://dm.services.nconprem-10-53-58-35.ccpnx.com/api/nutanix/v3/projects/list
+default payload:
+{"length":20,"offset":0,"kind":"project"}
+provide search option as well, if user enters any search term, use it to filter the project list
+{"length":20,"offset":0,"kind":"project","filter":"name==.*[n|N][u|U][c|C][a|A][l|L][m|M].*"}
+
+below is the response payload:
+{
+    "api_version": "3.0",
+    "metadata": {
+        "total_matches": 3,
+        "kind": "project"
+    },
+    "entities": [
+        {
+            "status": {
+                "name": "Nucalm_6ik1",
+                "uuid": "dd28b4af-9671-4de5-b22f-b22a3a6f7e19",
+                "description": "",
+                "resources": {
+                    "subnet_reference_list": [],
+                    "user_reference_list": [],
+                    "external_network_list": [
+                        {
+                            "uuid": "6067c985-bd89-42d2-a4e3-87a759432240",
+                            "name": "vlan.114"
+                        }
+                    ],
+                    "external_user_group_reference_list": [],
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "43ab8bf9-0868-49d4-8a4d-50ee3ca5308f"
+                        }
+                    ],
+                    "environment_reference_list": [],
+                    "tunnel_reference_list": [],
+                    "default_subnet_reference": {},
+                    "default_environment_reference": {},
+                    "directory_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "00063ef1-3acc-466e-0a59-3e878e0ed012"
+                        }
+                    ],
+                    "vpc_reference_list": [],
+                    "resource_domain": {},
+                    "enable_directory_and_identity_provider_shortlist": false
+                },
+                "state": "COMPLETE",
+                "execution_context": {
+                    "task_uuid": []
+                }
+            },
+            "spec": {
+                "name": "Nucalm_6ik1",
+                "resources": {
+                    "resource_domain": {
+                        "resources": []
+                    },
+                    "subnet_reference_list": [],
+                    "user_reference_list": [],
+                    "external_user_group_reference_list": [],
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "43ab8bf9-0868-49d4-8a4d-50ee3ca5308f"
+                        }
+                    ],
+                    "tunnel_reference_list": [],
+                    "external_network_list": [
+                        {
+                            "name": "vlan.114",
+                            "uuid": "6067c985-bd89-42d2-a4e3-87a759432240"
+                        }
+                    ],
+                    "environment_reference_list": [],
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "00063ef1-3acc-466e-0a59-3e878e0ed012"
+                        }
+                    ],
+                    "vpc_reference_list": [],
+                    "directory_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "enable_directory_and_identity_provider_shortlist": false
+                }
+            },
+            "api_version": "3.0",
+            "metadata": {
+                "last_update_time": "2025-12-11T09:36:16Z",
+                "uuid": "dd28b4af-9671-4de5-b22f-b22a3a6f7e19",
+                "creation_time": "2025-12-01T18:32:06Z",
+                "spec_version": 8,
+                "name": "Nucalm_6ik1",
+                "kind": "project",
+                "project_reference": {
+                    "kind": "project",
+                    "name": "Nucalm_6ik1",
+                    "uuid": "dd28b4af-9671-4de5-b22f-b22a3a6f7e19"
+                },
+                "owner_reference": {
+                    "kind": "user",
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "name": "admin"
+                }
+            }
+        },
+        {
+            "status": {
+                "name": "Nucalm_new",
+                "uuid": "399363ce-5126-44ec-9ad2-2006278afd18",
+                "description": "",
+                "resources": {
+                    "subnet_reference_list": [],
+                    "user_reference_list": [],
+                    "external_network_list": [
+                        {
+                            "uuid": "82026166-9cbd-4fcf-bc42-697f9202a33b",
+                            "name": "ST_Subnet_PE2_vlan.102"
+                        },
+                        {
+                            "uuid": "8598f8d3-5457-4a32-ac76-bfaa372b3fca",
+                            "name": "ST_Subnet_PE2_vlan.141"
+                        },
+                        {
+                            "uuid": "4aca4159-548f-4be2-a0d0-bd292c912af4",
+                            "name": "ST_Subnet_vlan.500"
+                        },
+                        {
+                            "uuid": "0402c2dd-a4aa-4bc8-9619-f612b29a5625",
+                            "name": "ST_Subnet_ncmlb"
+                        },
+                        {
+                            "uuid": "2cf905df-bf4b-4cf1-a1b0-56ec037dee48",
+                            "name": "ST_Subnet_HomePE_vlan.502"
+                        },
+                        {
+                            "uuid": "dd59dac1-9bc4-4955-b310-b1883dfb550d",
+                            "name": "ST_Subnet_PE1_vlan.500"
+                        },
+                        {
+                            "uuid": "0fdfd923-a2a2-4ea6-806d-c7d9fefc1dd1",
+                            "name": "ST_Subnet_PE1_vlan.502"
+                        },
+                        {
+                            "uuid": "6e7e9794-db7d-46de-9954-1513982b4bbf",
+                            "name": "vlan.500"
+                        }
+                    ],
+                    "external_user_group_reference_list": [],
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "f742dca6-bd52-4258-9202-a4ca6be9a28b"
+                        }
+                    ],
+                    "environment_reference_list": [
+                        {
+                            "kind": "environment",
+                            "uuid": "13c7474e-104e-c23d-b14b-666a366445bf"
+                        }
+                    ],
+                    "tunnel_reference_list": [
+                        {
+                            "kind": "tunnel",
+                            "uuid": "d19b8ae3-3bfd-3c87-8621-36c0b4ce0817"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "bfb36d4c-94fa-7b55-c414-8cd1bfdb1b40"
+                        }
+                    ],
+                    "default_subnet_reference": {},
+                    "default_environment_reference": {
+                        "kind": "environment",
+                        "uuid": "13c7474e-104e-c23d-b14b-666a366445bf"
+                    },
+                    "directory_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-6ca7-bd34-1324-ac1f6b61e0e2"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-4078-1de3-5416-7cc2558157ac"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-5e10-4d2e-7faf-ac1f6b61e0cf"
+                        }
+                    ],
+                    "vpc_reference_list": [],
+                    "resource_domain": {},
+                    "enable_directory_and_identity_provider_shortlist": false
+                },
+                "state": "COMPLETE",
+                "execution_context": {
+                    "task_uuid": []
+                }
+            },
+            "spec": {
+                "name": "Nucalm_new",
+                "resources": {
+                    "resource_domain": {
+                        "resources": []
+                    },
+                    "subnet_reference_list": [],
+                    "user_reference_list": [],
+                    "external_user_group_reference_list": [],
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "f742dca6-bd52-4258-9202-a4ca6be9a28b"
+                        }
+                    ],
+                    "tunnel_reference_list": [
+                        {
+                            "kind": "tunnel",
+                            "uuid": "bfb36d4c-94fa-7b55-c414-8cd1bfdb1b40"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "d19b8ae3-3bfd-3c87-8621-36c0b4ce0817"
+                        }
+                    ],
+                    "external_network_list": [
+                        {
+                            "name": "ST_Subnet_HomePE_vlan.502",
+                            "uuid": "2cf905df-bf4b-4cf1-a1b0-56ec037dee48"
+                        },
+                        {
+                            "name": "ST_Subnet_PE1_vlan.500",
+                            "uuid": "dd59dac1-9bc4-4955-b310-b1883dfb550d"
+                        },
+                        {
+                            "name": "ST_Subnet_PE1_vlan.502",
+                            "uuid": "0fdfd923-a2a2-4ea6-806d-c7d9fefc1dd1"
+                        },
+                        {
+                            "name": "ST_Subnet_PE2_vlan.102",
+                            "uuid": "82026166-9cbd-4fcf-bc42-697f9202a33b"
+                        },
+                        {
+                            "name": "ST_Subnet_PE2_vlan.141",
+                            "uuid": "8598f8d3-5457-4a32-ac76-bfaa372b3fca"
+                        },
+                        {
+                            "name": "ST_Subnet_ncmlb",
+                            "uuid": "0402c2dd-a4aa-4bc8-9619-f612b29a5625"
+                        },
+                        {
+                            "name": "ST_Subnet_vlan.500",
+                            "uuid": "4aca4159-548f-4be2-a0d0-bd292c912af4"
+                        },
+                        {
+                            "name": "vlan.500",
+                            "uuid": "6e7e9794-db7d-46de-9954-1513982b4bbf"
+                        }
+                    ],
+                    "environment_reference_list": [
+                        {
+                            "kind": "environment",
+                            "uuid": "13c7474e-104e-c23d-b14b-666a366445bf"
+                        }
+                    ],
+                    "default_environment_reference": {
+                        "kind": "environment",
+                        "uuid": "13c7474e-104e-c23d-b14b-666a366445bf"
+                    },
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-4078-1de3-5416-7cc2558157ac"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-5e10-4d2e-7faf-ac1f6b61e0cf"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-6ca7-bd34-1324-ac1f6b61e0e2"
+                        }
+                    ],
+                    "vpc_reference_list": [],
+                    "directory_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "enable_directory_and_identity_provider_shortlist": false
+                }
+            },
+            "api_version": "3.0",
+            "metadata": {
+                "last_update_time": "2025-12-11T09:36:16Z",
+                "uuid": "399363ce-5126-44ec-9ad2-2006278afd18",
+                "creation_time": "2025-10-29T06:01:40Z",
+                "spec_version": 54,
+                "name": "Nucalm_new",
+                "kind": "project",
+                "project_reference": {
+                    "kind": "project",
+                    "name": "Nucalm_new",
+                    "uuid": "399363ce-5126-44ec-9ad2-2006278afd18"
+                },
+                "owner_reference": {
+                    "kind": "user",
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "name": "admin"
+                }
+            }
+        },
+        {
+            "status": {
+                "name": "Nucalm_manual",
+                "uuid": "e4bb45fd-e89c-4282-aae5-17e6241022a0",
+                "description": "",
+                "resources": {
+                    "subnet_reference_list": [],
+                    "user_reference_list": [
+                        {
+                            "kind": "user",
+                            "name": "st-sspadmin@systest.nutanix.com",
+                            "uuid": "397b280e-a29c-5cf3-bcb0-861df82fa05f"
+                        }
+                    ],
+                    "external_network_list": [
+                        {
+                            "uuid": "82026166-9cbd-4fcf-bc42-697f9202a33b",
+                            "name": "ST_Subnet_PE2_vlan.102"
+                        },
+                        {
+                            "uuid": "4aca4159-548f-4be2-a0d0-bd292c912af4",
+                            "name": "ST_Subnet_vlan.500"
+                        },
+                        {
+                            "uuid": "0402c2dd-a4aa-4bc8-9619-f612b29a5625",
+                            "name": "ST_Subnet_ncmlb"
+                        },
+                        {
+                            "uuid": "dd59dac1-9bc4-4955-b310-b1883dfb550d",
+                            "name": "ST_Subnet_PE1_vlan.500"
+                        },
+                        {
+                            "uuid": "0fdfd923-a2a2-4ea6-806d-c7d9fefc1dd1",
+                            "name": "ST_Subnet_vlan.502"
+                        },
+                        {
+                            "uuid": "2cf905df-bf4b-4cf1-a1b0-56ec037dee48",
+                            "name": "ST_Subnet_vlan.502"
+                        },
+                        {
+                            "uuid": "8598f8d3-5457-4a32-ac76-bfaa372b3fca",
+                            "name": "ST_Subnet_vlan.141"
+                        },
+                        {
+                            "uuid": "6e7e9794-db7d-46de-9954-1513982b4bbf",
+                            "name": "vlan.500"
+                        }
+                    ],
+                    "external_user_group_reference_list": [],
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "f742dca6-bd52-4258-9202-a4ca6be9a28b"
+                        }
+                    ],
+                    "environment_reference_list": [
+                        {
+                            "kind": "environment",
+                            "uuid": "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+                        }
+                    ],
+                    "tunnel_reference_list": [
+                        {
+                            "kind": "tunnel",
+                            "uuid": "d19b8ae3-3bfd-3c87-8621-36c0b4ce0817"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "bfb36d4c-94fa-7b55-c414-8cd1bfdb1b40"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "78ecf299-f69c-ea4d-834c-08cd748f9fe4"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "3eb0ea16-5904-445c-f820-94b8021363b2"
+                        }
+                    ],
+                    "default_subnet_reference": {},
+                    "default_environment_reference": {
+                        "kind": "environment",
+                        "uuid": "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+                    },
+                    "directory_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-5e10-4d2e-7faf-ac1f6b61e0cf"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-6ca7-bd34-1324-ac1f6b61e0e2"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-4078-1de3-5416-7cc2558157ac"
+                        }
+                    ],
+                    "vpc_reference_list": [],
+                    "resource_domain": {},
+                    "enable_directory_and_identity_provider_shortlist": false
+                },
+                "state": "COMPLETE",
+                "execution_context": {
+                    "task_uuid": [
+                        "589fd3d0-0c37-49bb-a011-dbecaaff422d"
+                    ]
+                }
+            },
+            "spec": {
+                "name": "Nucalm_manual",
+                "resources": {
+                    "account_reference_list": [
+                        {
+                            "kind": "account",
+                            "uuid": "f742dca6-bd52-4258-9202-a4ca6be9a28b"
+                        }
+                    ],
+                    "cluster_reference_list": [
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-5e10-4d2e-7faf-ac1f6b61e0cf"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-6ca7-bd34-1324-ac1f6b61e0e2"
+                        },
+                        {
+                            "kind": "cluster",
+                            "uuid": "000641b9-4078-1de3-5416-7cc2558157ac"
+                        }
+                    ],
+                    "default_environment_reference": {
+                        "kind": "environment",
+                        "uuid": "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+                    },
+                    "directory_reference_list": [],
+                    "enable_directory_and_identity_provider_shortlist": false,
+                    "environment_reference_list": [
+                        {
+                            "kind": "environment",
+                            "uuid": "0f4e25f7-1bb5-5022-f61f-25228c8e2003"
+                        }
+                    ],
+                    "external_network_list": [
+                        {
+                            "name": "ST_Subnet_PE2_vlan.102",
+                            "uuid": "82026166-9cbd-4fcf-bc42-697f9202a33b"
+                        },
+                        {
+                            "name": "ST_Subnet_vlan.500",
+                            "uuid": "4aca4159-548f-4be2-a0d0-bd292c912af4"
+                        },
+                        {
+                            "name": "ST_Subnet_ncmlb",
+                            "uuid": "0402c2dd-a4aa-4bc8-9619-f612b29a5625"
+                        },
+                        {
+                            "name": "ST_Subnet_PE1_vlan.500",
+                            "uuid": "dd59dac1-9bc4-4955-b310-b1883dfb550d"
+                        },
+                        {
+                            "name": "ST_Subnet_vlan.502",
+                            "uuid": "0fdfd923-a2a2-4ea6-806d-c7d9fefc1dd1"
+                        },
+                        {
+                            "name": "ST_Subnet_vlan.502",
+                            "uuid": "2cf905df-bf4b-4cf1-a1b0-56ec037dee48"
+                        },
+                        {
+                            "name": "ST_Subnet_vlan.141",
+                            "uuid": "8598f8d3-5457-4a32-ac76-bfaa372b3fca"
+                        },
+                        {
+                            "name": "vlan.500",
+                            "uuid": "6e7e9794-db7d-46de-9954-1513982b4bbf"
+                        }
+                    ],
+                    "external_user_group_reference_list": [],
+                    "identity_providers_reference_list": [],
+                    "subnet_reference_list": [],
+                    "tunnel_reference_list": [
+                        {
+                            "kind": "tunnel",
+                            "uuid": "d19b8ae3-3bfd-3c87-8621-36c0b4ce0817"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "bfb36d4c-94fa-7b55-c414-8cd1bfdb1b40"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "78ecf299-f69c-ea4d-834c-08cd748f9fe4"
+                        },
+                        {
+                            "kind": "tunnel",
+                            "uuid": "3eb0ea16-5904-445c-f820-94b8021363b2"
+                        }
+                    ],
+                    "user_reference_list": [
+                        {
+                            "kind": "user",
+                            "name": "st-sspadmin@systest.nutanix.com",
+                            "uuid": "397b280e-a29c-5cf3-bcb0-861df82fa05f"
+                        }
+                    ],
+                    "vpc_reference_list": []
+                }
+            },
+            "api_version": "3.0",
+            "metadata": {
+                "last_update_time": "2026-01-13T11:29:07Z",
+                "uuid": "e4bb45fd-e89c-4282-aae5-17e6241022a0",
+                "creation_time": "2025-10-22T20:43:27Z",
+                "spec_version": 0,
+                "name": "Nucalm_manual",
+                "kind": "project",
+                "project_reference": {
+                    "kind": "project",
+                    "name": "Nucalm_manual",
+                    "uuid": "e4bb45fd-e89c-4282-aae5-17e6241022a0"
+                },
+                "owner_reference": {
+                    "kind": "user",
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "name": "admin"
+                }
+            }
+        }
+    ]
+}
+show all spec['name'] in the project list
+user will select one project from the list
+use the project uuid to update the project_reference field in the entity
+
+store the below values from the selected project 
+account_reference_list
+cluster_reference_list
+default_environment_reference
+environment_reference_list
+external_network_list
+subnet_reference_list
+provide drop down for the above values, user will select one value from the drop down
+
+images_list:
+https://ncm.services.nconprem-10-53-58-35.ccpnx.com/api/nutanix/v3/nutanix/v1/groups/list
+default payload:
+use the above select account_uuid from account_reference_list dropdown
+{"entity_type":"image_info","query_name":"test","group_member_attributes":[{"attribute":"uuid"},{"attribute":"name"},{"attribute":"image_type"},{"attribute":"vmdisk_size"}],"filter_criteria":"account_uuid==f742dca6-bd52-4258-9202-a4ca6be9a28b"}
+project_reference==uuid is above project uuid
+
+
+
+

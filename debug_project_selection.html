@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Project Selection</title>
+    <script>
+        async function testProjectSelection() {
+            try {
+                // Fetch projects
+                const response = await fetch('/api/live-uuid/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pc_url: 'https://iam.nconprem-10-53-58-35.ccpnx.com/',
+                        username: 'admin',
+                        password: 'Nutanix.123'
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Projects API response:', result);
+                
+                if (result.success && result.projects.length > 0) {
+                    const firstProject = result.projects[0];
+                    console.log('First project:', firstProject);
+                    console.log('Project resources:', firstProject.resources);
+                    
+                    document.getElementById('output').innerHTML = `
+                        <h3>Project: ${firstProject.name}</h3>
+                        <p>UUID: ${firstProject.uuid}</p>
+                        <h4>Resources:</h4>
+                        <ul>
+                            <li>Accounts: ${firstProject.resources.account_reference_list?.length || 0}</li>
+                            <li>Clusters: ${firstProject.resources.cluster_reference_list?.length || 0}</li>
+                            <li>Environments: ${firstProject.resources.environment_reference_list?.length || 0}</li>
+                            <li>Networks: ${firstProject.resources.external_network_list?.length || 0}</li>
+                            <li>Subnets: ${firstProject.resources.subnet_reference_list?.length || 0}</li>
+                        </ul>
+                        <h4>Account Details:</h4>
+                        <pre>${JSON.stringify(firstProject.resources.account_reference_list, null, 2)}</pre>
+                        <h4>Cluster Details:</h4>
+                        <pre>${JSON.stringify(firstProject.resources.cluster_reference_list, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('output').innerHTML = 'No projects found or API error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Debug Project Selection</h1>
+    <button onclick="testProjectSelection()">Test Project API</button>
+    <div id="output"></div>
+</body>
+</html>
