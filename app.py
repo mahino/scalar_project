@@ -12,8 +12,6 @@ import logging
 import sys
 from datetime import datetime
 import glob
-import shutil
-
 app = Flask(__name__)
 
 # ============================================================================
@@ -789,6 +787,426 @@ def find_entities_in_payload(data: Any, path: str = "", entities: Dict[str, Any]
 # SCALING LOGIC
 # ============================================================================
 
+def calculate_entity_counts_from_user_input(user_input: Dict[str, int]) -> Dict[str, int]:
+    """
+    Calculate full entity_counts from simplified user input.
+    
+    User Input:
+    - services: Number of services
+    - app_profiles: Number of app profiles  
+    - credentials: Number of credentials
+    
+    Auto-calculated Rules:
+    - packages = app_profiles
+    - deployments_per_profile = services
+    - substrates = app_profiles * services
+    """
+    services = user_input.get('services', 1)
+    app_profiles = user_input.get('app_profiles', 1)
+    credentials = user_input.get('credentials', 1)
+    
+    # Auto-calculate based on rules
+    packages = app_profiles
+    deployments_per_profile = services
+    substrates = app_profiles * services
+    
+    logger.info(f"DEBUG: User input - Services: {services}, App Profiles: {app_profiles}, Credentials: {credentials}")
+    logger.info(f"DEBUG: Auto-calculated - Packages: {packages}, Deployments per Profile: {deployments_per_profile}, Substrates: {substrates}")
+    
+    # Build full entity_counts structure
+    # Note: The system will auto-adjust deployments to match services, 
+    # but we need to ensure packages don't get over-scaled
+    entity_counts = {
+        'spec.resources.app_profile_list': app_profiles,
+        'spec.resources.app_profile_list.deployment_create_list': 1,  # Will be auto-adjusted to services count
+        'spec.resources.service_definition_list': services,
+        'spec.resources.substrate_definition_list': substrates,
+        'spec.resources.package_definition_list': packages,
+        'spec.resources.credential_definition_list': credentials,
+        'options.install_runbook.task_definition_list': 1,
+        'options.uninstall_runbook.task_definition_list': 1
+    }
+    
+    logger.info(f"DEBUG: Generated entity_counts: {entity_counts}")
+    return entity_counts
+
+
+def adjust_entity_counts_for_service_deployment_mapping(entity_counts: Dict[str, int]) -> Dict[str, int]:
+    """
+    Adjust entity counts so that:
+    - Number of deployments per app_profile = Number of services
+    - This ensures each deployment can map to a unique service
+    """
+    adjusted_counts = entity_counts.copy()
+    
+    # Get the number of services
+    service_count = entity_counts.get('spec.resources.service_definition_list', 1)
+    
+    # Set deployments per app_profile to match service count
+    deployment_key = 'spec.resources.app_profile_list.deployment_create_list'
+    if deployment_key in adjusted_counts:
+        old_deployment_count = adjusted_counts[deployment_key]
+        adjusted_counts[deployment_key] = service_count
+        logger.info(f"DEBUG: Adjusted deployment count from {old_deployment_count} to {service_count} to match service count")
+    
+    return adjusted_counts
+
+
+def process_user_input_and_generate_payload(user_input: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Process user input and generate payload.
+    Supports both simplified user input and full entity_counts.
+    """
+    logger.info(f"DEBUG: Processing user input: {user_input}")
+    
+    # Check if this is simplified user input (has 'services', 'app_profiles', 'credentials')
+    if 'services' in user_input or 'app_profiles' in user_input or 'credentials' in user_input:
+        logger.info("DEBUG: Detected simplified user input format")
+        
+        # Extract simplified input
+        simplified_input = {
+            'services': user_input.get('services', 1),
+            'app_profiles': user_input.get('app_profiles', 1), 
+            'credentials': user_input.get('credentials', 1)
+        }
+        
+        # Calculate full entity_counts
+        entity_counts = calculate_entity_counts_from_user_input(simplified_input)
+        
+        # Create full request structure
+        processed_request = {
+            'api_url': user_input.get('api_url', 'blueprint'),
+            'entity_counts': entity_counts
+        }
+        
+        logger.info(f"DEBUG: Converted simplified input to full request: {processed_request}")
+        return processed_request
+    
+    else:
+        logger.info("DEBUG: Using existing full entity_counts format")
+        return user_input
+
+
+def apply_hardcoded_scaling_rules(data: Any) -> Any:
+    """
+    HARDCODED SCALING RULES - Applied automatically to all requests:
+    
+    User Inputs: Services, App Profiles, Credentials
+    Hardcoded Rules:
+    - Packages = App Profiles × Services (one package per deployment)
+    - Deployments per Profile = Services
+    - Substrates = App Profiles × Services
+    """
+    if not isinstance(data, dict) or 'spec' not in data:
+        return data
+    
+    resources = data.get('spec', {}).get('resources', {})
+    if not resources:
+        return data
+    
+    # Get counts from the actual generated entities
+    service_count = len(resources.get('service_definition_list', []))
+    app_profile_list = resources.get('app_profile_list', [])
+    app_profile_count = len(app_profile_list)
+    credential_count = len(resources.get('credential_definition_list', []))
+    
+    logger.info(f"HARDCODED RULES - Input counts: Services={service_count}, App Profiles={app_profile_count}, Credentials={credential_count}")
+    
+    # RULE 1: Deployments per Profile = Services
+    logger.info(f"RULE 1: Setting Deployments per Profile = Services ({service_count})")
+    for i, app_profile in enumerate(app_profile_list):
+        current_deployments = app_profile.get('deployment_create_list', [])
+        current_deployment_count = len(current_deployments)
+        
+        if current_deployment_count < service_count:
+            # Add more deployments
+            deployments_to_add = service_count - current_deployment_count
+            if current_deployments:
+                template_deployment = copy.deepcopy(current_deployments[0])
+                for j in range(deployments_to_add):
+                    new_deployment = copy.deepcopy(template_deployment)
+                    new_deployment['uuid'] = str(uuid.uuid4())
+                    new_deployment['name'] = f"deployment_{str(uuid.uuid4())[:8]}"
+                    current_deployments.append(new_deployment)
+                    
+        elif current_deployment_count > service_count:
+            # Remove excess deployments
+            app_profile['deployment_create_list'] = current_deployments[:service_count]
+    
+    # RULE 2: Packages = App Profiles × Services (same as substrates)
+    expected_package_count = app_profile_count * service_count
+    logger.info(f"RULE 2: Setting Packages = App Profiles × Services ({app_profile_count} × {service_count} = {expected_package_count})")
+    package_list = resources.get('package_definition_list', [])
+    current_package_count = len(package_list)
+    
+    if current_package_count > expected_package_count:
+        # Remove excess packages
+        resources['package_definition_list'] = package_list[:expected_package_count]
+        
+    elif current_package_count < expected_package_count:
+        # Add more packages
+        if package_list:
+            template_package = copy.deepcopy(package_list[0])
+            service_list = resources.get('service_definition_list', [])
+            service_uuids = [s.get('uuid') for s in service_list if s.get('uuid')]
+            
+            for i in range(expected_package_count - current_package_count):
+                new_package = copy.deepcopy(template_package)
+                new_package['uuid'] = str(uuid.uuid4())
+                
+                # Calculate which service this package should point to (cycling)
+                global_package_index = current_package_count + i
+                service_index = global_package_index % service_count
+                new_package['name'] = f"Package{global_package_index + 1}"
+                
+                # Update service_local_reference_list to point to the correct service
+                if service_uuids and service_index < len(service_uuids):
+                    target_service_uuid = service_uuids[service_index]
+                    if 'service_local_reference_list' in new_package:
+                        for ref in new_package['service_local_reference_list']:
+                            if ref.get('kind') == 'app_service':
+                                ref['uuid'] = target_service_uuid
+                    logger.info(f"Package{global_package_index + 1} -> Service {service_index + 1} (UUID: {target_service_uuid})")
+                
+                package_list.append(new_package)
+    
+    # RULE 3: Substrates = App Profiles × Services
+    expected_substrate_count = app_profile_count * service_count
+    logger.info(f"RULE 3: Setting Substrates = App Profiles × Services ({app_profile_count} × {service_count} = {expected_substrate_count})")
+    
+    substrate_list = resources.get('substrate_definition_list', [])
+    current_substrate_count = len(substrate_list)
+    
+    if current_substrate_count > expected_substrate_count:
+        # Remove excess substrates
+        resources['substrate_definition_list'] = substrate_list[:expected_substrate_count]
+        
+    elif current_substrate_count < expected_substrate_count:
+        # Add more substrates
+        if substrate_list:
+            template_substrate = copy.deepcopy(substrate_list[0])
+            for i in range(expected_substrate_count - current_substrate_count):
+                new_substrate = copy.deepcopy(template_substrate)
+                new_substrate['uuid'] = str(uuid.uuid4())
+                new_substrate['name'] = f"VM1_{current_substrate_count + i + 1}"
+                substrate_list.append(new_substrate)
+    
+    logger.info(f"HARDCODED RULES APPLIED - Final counts: Services={len(resources.get('service_definition_list', []))}, App Profiles={len(resources.get('app_profile_list', []))}, Packages={len(resources.get('package_definition_list', []))}, Substrates={len(resources.get('substrate_definition_list', []))}, Credentials={len(resources.get('credential_definition_list', []))}")
+    return data
+
+
+def fix_blueprint_deployment_references(data: Any) -> Any:
+    """
+    Fix blueprint deployment references to ensure proper UUID mapping.
+    This function ensures:
+    1. Apply hardcoded scaling rules first
+    2. Each deployment references a unique package and substrate
+    3. Package runbook tasks reference their own package UUID
+    4. Service action tasks reference their own service UUID
+    5. All deployment UUIDs are added to client_attrs with grid positioning
+    """
+    logger.info("DEBUG: fix_blueprint_deployment_references called")
+    
+    # STEP 1: Apply hardcoded scaling rules
+    data = apply_hardcoded_scaling_rules(data)
+    
+    if not isinstance(data, dict) or 'spec' not in data:
+        logger.info("DEBUG: No spec found in data, returning unchanged")
+        return data
+    
+    resources = data.get('spec', {}).get('resources', {})
+    if not resources:
+        logger.info("DEBUG: No resources found, returning unchanged")
+        return data
+    
+    # STEP 2: Continue with UUID mapping (hardcoded rules already applied)
+    service_count = len(resources.get('service_definition_list', []))
+    app_profile_list = resources.get('app_profile_list', [])
+    app_profile_count = len(app_profile_list)
+    
+    logger.info(f"DEBUG: After hardcoded rules - Service count: {service_count}, App profile count: {app_profile_count}")
+    
+    # Get all entity UUIDs in order
+    substrate_uuids = [s.get('uuid') for s in resources.get('substrate_definition_list', []) if s.get('uuid')]
+    package_uuids = [p.get('uuid') for p in resources.get('package_definition_list', []) if p.get('uuid')]
+    service_uuids = [s.get('uuid') for s in resources.get('service_definition_list', []) if s.get('uuid')]
+    
+    logger.info(f"DEBUG: fix_blueprint_deployment_references - substrate_uuids: {substrate_uuids}")
+    logger.info(f"DEBUG: fix_blueprint_deployment_references - package_uuids: {package_uuids}")
+    logger.info(f"DEBUG: fix_blueprint_deployment_references - service_uuids: {service_uuids}")
+    
+    # Debug: Check current deployment references BEFORE fixing
+    deployment_index = 0
+    for profile in resources.get('app_profile_list', []):
+        for deployment in profile.get('deployment_create_list', []):
+            current_substrate_uuid = deployment.get('substrate_local_reference', {}).get('uuid', 'None')
+            current_package_uuid = 'None'
+            if 'package_local_reference_list' in deployment and deployment['package_local_reference_list']:
+                current_package_uuid = deployment['package_local_reference_list'][0].get('uuid', 'None')
+            logger.info(f"DEBUG: BEFORE - Deployment {deployment_index}: substrate={current_substrate_uuid}, package={current_package_uuid}")
+            deployment_index += 1
+    
+    # Fix deployment references
+    deployment_index = 0
+    for profile in resources.get('app_profile_list', []):
+        for deployment in profile.get('deployment_create_list', []):
+            logger.info(f"DEBUG: Processing deployment {deployment_index}")
+            
+            # Fix substrate reference
+            if 'substrate_local_reference' in deployment and deployment_index < len(substrate_uuids):
+                old_uuid = deployment['substrate_local_reference'].get('uuid')
+                new_uuid = substrate_uuids[deployment_index]
+                deployment['substrate_local_reference']['uuid'] = new_uuid
+                logger.info(f"DEBUG: Updated substrate reference from {old_uuid} to {new_uuid}")
+            
+            # Fix package references
+            if 'package_local_reference_list' in deployment:
+                for pkg_ref in deployment['package_local_reference_list']:
+                    if deployment_index < len(package_uuids):
+                        old_uuid = pkg_ref.get('uuid')
+                        new_uuid = package_uuids[deployment_index]
+                        pkg_ref['uuid'] = new_uuid
+                        logger.info(f"DEBUG: Updated package reference from {old_uuid} to {new_uuid}")
+            
+            deployment_index += 1
+    
+    # Debug: Check deployment references AFTER fixing
+    deployment_index = 0
+    for profile in resources.get('app_profile_list', []):
+        for deployment in profile.get('deployment_create_list', []):
+            current_substrate_uuid = deployment.get('substrate_local_reference', {}).get('uuid', 'None')
+            current_package_uuid = 'None'
+            if 'package_local_reference_list' in deployment and deployment['package_local_reference_list']:
+                current_package_uuid = deployment['package_local_reference_list'][0].get('uuid', 'None')
+            logger.info(f"DEBUG: AFTER - Deployment {deployment_index}: substrate={current_substrate_uuid}, package={current_package_uuid}")
+            deployment_index += 1
+    
+    # Fix package-to-service references (distribute packages across services)
+    if service_uuids and package_uuids:
+        package_list = resources.get('package_definition_list', [])
+        logger.info(f"DEBUG: Total packages in package_definition_list: {len(package_list)}")
+        logger.info(f"DEBUG: Expected package_uuids count: {len(package_uuids)}")
+        
+        for i, package in enumerate(package_list):
+            package_uuid = package.get('uuid')
+            logger.info(f"DEBUG: Processing package {i}: {package.get('name', 'unnamed')} (UUID: {package_uuid})")
+            
+            # NEW LOGIC: Packages already have correct 1:1 service mapping from generation
+            # No need to modify service_local_reference_list - it's already correct
+            
+            # CRITICAL FIX: Fix package runbook task references to point to the package itself
+            if package_uuid and 'options' in package:
+                # Fix install_runbook task references
+                if 'install_runbook' in package['options']:
+                    install_runbook = package['options']['install_runbook']
+                    if 'task_definition_list' in install_runbook:
+                        for task in install_runbook['task_definition_list']:
+                            if 'target_any_local_reference' in task:
+                                old_target = task['target_any_local_reference'].get('uuid')
+                                task['target_any_local_reference']['uuid'] = package_uuid
+                                logger.info(f"DEBUG: Fixed package {i} install task target from {old_target} to {package_uuid}")
+                
+                # Fix uninstall_runbook task references
+                if 'uninstall_runbook' in package['options']:
+                    uninstall_runbook = package['options']['uninstall_runbook']
+                    if 'task_definition_list' in uninstall_runbook:
+                        for task in uninstall_runbook['task_definition_list']:
+                            if 'target_any_local_reference' in task:
+                                old_target = task['target_any_local_reference'].get('uuid')
+                                task['target_any_local_reference']['uuid'] = package_uuid
+                                logger.info(f"DEBUG: Fixed package {i} uninstall task target from {old_target} to {package_uuid}")
+    
+    # CRITICAL FIX: Fix service action task references to point to their own service UUID
+    if service_uuids:
+        service_list = resources.get('service_definition_list', [])
+        for i, service in enumerate(service_list):
+            service_uuid = service.get('uuid')
+            logger.info(f"DEBUG: Processing service {i}: {service.get('name', 'unnamed')} (UUID: {service_uuid})")
+            
+            if service_uuid and 'action_list' in service:
+                for action in service['action_list']:
+                    if 'runbook' in action and 'task_definition_list' in action['runbook']:
+                        for task in action['runbook']['task_definition_list']:
+                            if 'target_any_local_reference' in task and task['target_any_local_reference'].get('kind') == 'app_service':
+                                old_target = task['target_any_local_reference'].get('uuid')
+                                task['target_any_local_reference']['uuid'] = service_uuid
+                                logger.info(f"DEBUG: Fixed service {i} action '{action.get('name')}' task target from {old_target} to {service_uuid}")
+    
+    # CRITICAL FIX: Add all deployment UUIDs to client_attrs with grid positioning
+    if 'client_attrs' not in resources:
+        resources['client_attrs'] = {}
+    
+    deployment_count = 0
+    for profile in resources.get('app_profile_list', []):
+        for deployment in profile.get('deployment_create_list', []):
+            deployment_uuid = deployment.get('uuid')
+            if deployment_uuid:
+                # Calculate grid position (10 deployments per row)
+                row = deployment_count // 10
+                col = deployment_count % 10
+                x_pos = (col + 1) * 10  # 10, 20, 30, 40...
+                y_pos = (row + 1) * 10  # 10 for first row, 20 for second row...
+                
+                resources['client_attrs'][deployment_uuid] = {
+                    "x": x_pos,
+                    "y": y_pos
+                }
+                logger.info(f"DEBUG: Added deployment {deployment_count} UUID {deployment_uuid} to client_attrs at position ({x_pos}, {y_pos})")
+                deployment_count += 1
+    
+    logger.info("DEBUG: fix_blueprint_deployment_references completed")
+    return data
+
+def fix_deployment_references(deployment: Dict[str, Any], deployment_index: int, id_mapping: Dict) -> Dict[str, Any]:
+    """
+    Fix deployment references to ensure proper 1:1 correspondence.
+    deployment_index 0 -> substrate[0], package[0]
+    deployment_index 1 -> substrate[1], package[1]
+    """
+    if not isinstance(deployment, dict):
+        return deployment
+    
+    logger.info(f"DEBUG: fix_deployment_references called with deployment_index={deployment_index}")
+    logger.info(f"DEBUG: id_mapping keys: {list(id_mapping.keys())}")
+    
+    # Fix substrate_local_reference
+    if 'substrate_local_reference' in deployment and 'uuid' in deployment['substrate_local_reference']:
+        original_substrate_uuid = deployment['substrate_local_reference']['uuid']
+        logger.info(f"DEBUG: Looking for substrate mapping for original UUID: {original_substrate_uuid}")
+        
+        # Find substrate UUIDs in id_mapping
+        for path, mapping in id_mapping.items():
+            if 'substrate_definition_list' in path:
+                logger.info(f"DEBUG: Found substrate path: {path}, mapping: {mapping}")
+                for original_uuid, new_uuids in mapping.items():
+                    if original_uuid == original_substrate_uuid and new_uuids and deployment_index < len(new_uuids):
+                        new_uuid = new_uuids[deployment_index]
+                        deployment['substrate_local_reference']['uuid'] = new_uuid
+                        logger.info(f"DEBUG: Updated substrate reference from {original_substrate_uuid} to {new_uuid}")
+                        break
+                break
+    
+    # Fix package_local_reference_list
+    if 'package_local_reference_list' in deployment:
+        for pkg_ref in deployment['package_local_reference_list']:
+            if isinstance(pkg_ref, dict) and 'uuid' in pkg_ref:
+                original_package_uuid = pkg_ref['uuid']
+                logger.info(f"DEBUG: Looking for package mapping for original UUID: {original_package_uuid}")
+                
+                # Find package UUIDs in id_mapping
+                for path, mapping in id_mapping.items():
+                    if 'package_definition_list' in path:
+                        logger.info(f"DEBUG: Found package path: {path}, mapping: {mapping}")
+                        for original_uuid, new_uuids in mapping.items():
+                            if original_uuid == original_package_uuid and new_uuids and deployment_index < len(new_uuids):
+                                new_uuid = new_uuids[deployment_index]
+                                pkg_ref['uuid'] = new_uuid
+                                logger.info(f"DEBUG: Updated package reference from {original_package_uuid} to {new_uuid}")
+                                break
+                        break
+    
+    return deployment
+
 def regenerate_all_ids_in_object(obj: Any, index: int, id_mapping: Dict, base_path: str) -> Any:
     """
     Recursively regenerate all ID fields in an object (including nested objects).
@@ -826,7 +1244,7 @@ def regenerate_all_ids_in_object(obj: Any, index: int, id_mapping: Dict, base_pa
 
 
 def scale_payload_with_ids(data: Any, entity_counts: Dict[str, int], id_mapping: Dict[str, Dict[Any, List[Any]]], path: str = "", current_indices: Dict[str, int] = None) -> Any:
-    """Recursively scale the payload based on entity counts, generating new IDs."""
+    """Recursively scale the payload based on entity counts, generating new IDs with proper reference assignment."""
     if current_indices is None:
         current_indices = {}
     
@@ -883,10 +1301,12 @@ def scale_payload_with_ids(data: Any, entity_counts: Dict[str, int], id_mapping:
     
     return data
 
-def update_references(data: Any, id_mapping: Dict[str, Dict[Any, List[Any]]], reference_map: Dict[str, List[str]], path: str = "", array_indices: Dict[str, int] = None) -> Any:
-    """Update all references in the payload to use the new generated IDs."""
+def update_references(data: Any, id_mapping: Dict[str, Dict[Any, List[Any]]], reference_map: Dict[str, List[str]], path: str = "", array_indices: Dict[str, int] = None, global_counter: Dict[str, int] = None) -> Any:
+    """Update all references in the payload to use the new generated IDs with proper 1:1 correspondence."""
     if array_indices is None:
         array_indices = {}
+    if global_counter is None:
+        global_counter = {}
     
     if isinstance(data, dict):
         result = {}
@@ -899,8 +1319,20 @@ def update_references(data: Any, id_mapping: Dict[str, Dict[Any, List[Any]]], re
                     if source_id_path in id_mapping:
                         for original_val, new_vals in id_mapping[source_id_path].items():
                             if value == original_val and new_vals:
-                                idx = sum(array_indices.values()) % len(new_vals) if array_indices else 0
-                                result[key] = new_vals[min(idx, len(new_vals) - 1)]
+                                # Use array indices to ensure proper 1:1 correspondence
+                                # For deployments: deployment[0] -> package[0], deployment[1] -> package[1]
+                                idx = 0
+                                if array_indices:
+                                    # Find the most relevant array index for this context
+                                    deployment_idx = array_indices.get('spec.resources.app_profile_list.deployment_create_list', 0)
+                                    profile_idx = array_indices.get('spec.resources.app_profile_list', 0)
+                                    
+                                    # Calculate the absolute deployment index across all profiles
+                                    # For 2 profiles with 1 deployment each: profile0_deployment0=0, profile1_deployment0=1
+                                    idx = profile_idx * 1 + deployment_idx  # Assuming 1 deployment per profile for now
+                                    idx = idx % len(new_vals)
+                                
+                                result[key] = new_vals[idx]
                                 updated = True
                                 break
                     if updated:
@@ -909,26 +1341,34 @@ def update_references(data: Any, id_mapping: Dict[str, Dict[Any, List[Any]]], re
                 if not updated:
                     for source_id_path, val_map in id_mapping.items():
                         if value in val_map and val_map[value]:
-                            idx = sum(array_indices.values()) % len(val_map[value]) if array_indices else 0
-                            result[key] = val_map[value][min(idx, len(val_map[value]) - 1)]
+                            # Use array indices for proper 1:1 correspondence
+                            idx = 0
+                            if array_indices:
+                                deployment_idx = array_indices.get('spec.resources.app_profile_list.deployment_create_list', 0)
+                                profile_idx = array_indices.get('spec.resources.app_profile_list', 0)
+                                idx = profile_idx * 1 + deployment_idx  # Assuming 1 deployment per profile
+                                idx = idx % len(val_map[value])
+                            
+                            result[key] = val_map[value][idx]
                             updated = True
                             break
                     
                     if not updated:
                         result[key] = value
             elif isinstance(value, dict):
-                result[key] = update_references(value, id_mapping, reference_map, current_path, array_indices)
+                result[key] = update_references(value, id_mapping, reference_map, current_path, array_indices, global_counter)
             elif isinstance(value, list):
                 updated_list = []
                 for i, item in enumerate(value):
                     new_indices = array_indices.copy()
                     new_indices[current_path] = i
                     if isinstance(item, dict):
-                        updated_list.append(update_references(item, id_mapping, reference_map, current_path, new_indices))
+                        updated_list.append(update_references(item, id_mapping, reference_map, current_path, new_indices, global_counter))
                     elif isinstance(item, (str, int)):
                         updated_item = item
                         for source_id_path, val_map in id_mapping.items():
                             if item in val_map and val_map[item]:
+                                # Use the list index for proper distribution within lists
                                 idx = i % len(val_map[item])
                                 updated_item = val_map[item][idx]
                                 break
@@ -946,7 +1386,7 @@ def update_references(data: Any, id_mapping: Dict[str, Dict[Any, List[Any]]], re
             new_indices = array_indices.copy()
             new_indices[path or 'root'] = i
             if isinstance(item, dict):
-                updated_list.append(update_references(item, id_mapping, reference_map, path, new_indices))
+                updated_list.append(update_references(item, id_mapping, reference_map, path, new_indices, global_counter))
             else:
                 updated_list.append(item)
         return updated_list
@@ -961,7 +1401,9 @@ def scale_payload(data: Any, entity_counts: Dict[str, int], path: str = "") -> A
     scaled = scale_payload_with_ids(data, entity_counts, id_mapping, path)
     
     if id_mapping and reference_map:
-        scaled = update_references(scaled, id_mapping, reference_map)
+        # Initialize global counter for proper reference distribution
+        global_counter = {}
+        scaled = update_references(scaled, id_mapping, reference_map, "", {}, global_counter)
     
     return scaled
 
@@ -1778,7 +2220,7 @@ def apply_blueprint_specific_fixes(data: Any, blueprint_type: str = 'multi_vm', 
                     substrate['default_credential_local_reference']['uuid'] = first_cred_uuid
     
     # 2. Fix package internal references
-    for pkg in resources.get('package_definition_list', []):
+    for pkg_idx, pkg in enumerate(resources.get('package_definition_list', [])):
         pkg_uuid = pkg.get('uuid')
         if pkg_uuid and 'options' in pkg:
             options = pkg['options']
@@ -1981,12 +2423,14 @@ def apply_blueprint_specific_fixes(data: Any, blueprint_type: str = 'multi_vm', 
                 # Always apply runbook rules to ensure DAG references are correct (even if tasks weren't scaled)
                 apply_runbook_rules_to_runbook(uninstall_rb)
         
-        # Fix service_local_reference_list - map to service UUIDs (one-to-one)
+        # Fix service_local_reference_list - map to service UUIDs using package index for cycling
         if 'service_local_reference_list' in pkg and service_uuids:
-            for ref_idx, ref in enumerate(pkg.get('service_local_reference_list', [])):
-                # Use corresponding service UUID (one-to-one) or round-robin
-                svc_uuid = service_uuids[ref_idx % len(service_uuids)] if ref_idx < len(service_uuids) else service_uuids[-1]
+            for ref in pkg.get('service_local_reference_list', []):
+                # Use package index for cycling through services
+                service_index = pkg_idx % len(service_uuids)
+                svc_uuid = service_uuids[service_index]
                 ref['uuid'] = svc_uuid
+                logger.info(f"Package {pkg_idx + 1} -> Service {service_index + 1} (UUID: {svc_uuid})")
     
     # 3. Fix service action_list - target_any_local_reference should point to service uuid
     #    Also generate unique action.uuid and runbook.uuid for each action
@@ -2573,6 +3017,473 @@ def set_value_at_path(data: Any, path: str, value: Any) -> Any:
     return traverse(data, parts)
 
 
+def generate_blueprint_payload(services_count: int, app_profiles_count: int) -> Dict[str, Any]:
+    """
+    Generate a blueprint payload following the standard rules:
+    - Services: user-specified count
+    - App Profiles: user-specified count  
+    - Substrates: services × app_profiles
+    - Packages: services × app_profiles (with correct service UUID mapping)
+    - Deployments: services count per app profile
+    - client_attrs: deployment UUIDs with coordinates
+    """
+    try:
+        logger.info(f"=== BLUEPRINT GENERATION START ===")
+        logger.info(f"Input parameters: services={services_count}, app_profiles={app_profiles_count}")
+        
+        # Validate inputs
+        if services_count <= 0 or app_profiles_count <= 0:
+            raise ValueError(f"Invalid counts: services={services_count}, app_profiles={app_profiles_count}. Both must be > 0")
+        
+        logger.info(f"Validation passed. Proceeding with generation...")
+    
+        # Generate base UUIDs
+        logger.info("Generating base UUIDs...")
+        blueprint_uuid = str(uuid.uuid4())
+        credential_uuid = str(uuid.uuid4())
+        logger.info(f"Blueprint UUID: {blueprint_uuid}")
+        logger.info(f"Credential UUID: {credential_uuid}")
+        
+        # Generate service UUIDs
+        logger.info(f"Generating {services_count} service UUIDs...")
+        service_uuids = [str(uuid.uuid4()) for _ in range(services_count)]
+        logger.info(f"Service UUIDs: {service_uuids}")
+        
+        # Calculate totals based on rules
+        total_substrates = services_count * app_profiles_count
+        total_packages = services_count * app_profiles_count
+        total_deployments = services_count * app_profiles_count
+        logger.info(f"Calculated totals: substrates={total_substrates}, packages={total_packages}, deployments={total_deployments}")
+        
+        # Generate substrate UUIDs
+        logger.info(f"Generating {total_substrates} substrate UUIDs...")
+        substrate_uuids = [str(uuid.uuid4()) for _ in range(total_substrates)]
+        logger.info(f"Substrate UUIDs count: {len(substrate_uuids)}")
+        
+        # Generate package UUIDs
+        logger.info(f"Generating {total_packages} package UUIDs...")
+        package_uuids = [str(uuid.uuid4()) for _ in range(total_packages)]
+        logger.info(f"Package UUIDs count: {len(package_uuids)}")
+        
+        # Generate deployment UUIDs
+        logger.info(f"Generating {total_deployments} deployment UUIDs...")
+        deployment_uuids = [str(uuid.uuid4()) for _ in range(total_deployments)]
+        logger.info(f"Deployment UUIDs count: {len(deployment_uuids)}")
+        
+        # Generate app profile UUIDs
+        logger.info(f"Generating {app_profiles_count} app profile UUIDs...")
+        app_profile_uuids = [str(uuid.uuid4()) for _ in range(app_profiles_count)]
+        logger.info(f"App profile UUIDs: {app_profile_uuids}")
+        
+        # Create the blueprint structure
+        logger.info("Creating blueprint structure...")
+        blueprint = {
+            "api_version": "3.0",
+            "metadata": {
+                "kind": "blueprint",
+                "categories": {},
+                "project_reference": {
+                    "kind": "project",
+                    "uuid": "c11ce261-c52b-4d34-8d49-37fb103acdcc"  # Keep existing project reference
+                },
+                "uuid": blueprint_uuid
+            },
+            "spec": {
+                "resources": {
+                    "service_definition_list": [],
+                    "credential_definition_list": [
+                        {
+                            "name": "admin",
+                            "type": "PASSWORD",
+                            "cred_class": "static",
+                            "username": "root",
+                            "secret": {
+                                "attrs": {
+                                    "is_secret_modified": True
+                                },
+                                "value": "nutanix/4u"
+                            },
+                            "uuid": credential_uuid
+                        }
+                    ],
+                    "substrate_definition_list": [],
+                    "default_credential_local_reference": {
+                        "kind": "app_credential",
+                        "uuid": credential_uuid,
+                        "name": "default_credential"
+                    },
+                    "published_service_definition_list": [],
+                    "package_definition_list": [],
+                    "app_profile_list": [],
+                    "client_attrs": {},
+                    "type": "USER"
+                },
+                "name": f"scaled_blueprint_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            }
+        }
+    
+        # Create services
+        logger.info(f"Creating {services_count} services...")
+        for i in range(services_count):
+            try:
+                logger.info(f"Creating service {i+1}/{services_count} with UUID: {service_uuids[i]}")
+                service = create_service_definition(i + 1, service_uuids[i])
+                blueprint["spec"]["resources"]["service_definition_list"].append(service)
+                logger.info(f"Successfully created service {i+1}: {service.get('name')}")
+            except Exception as e:
+                logger.error(f"Error creating service {i+1}: {str(e)}")
+                raise
+        
+        # Create substrates (services × app_profiles)
+        logger.info(f"Creating {total_substrates} substrates...")
+        substrate_index = 0
+        for profile_idx in range(app_profiles_count):
+            for service_idx in range(services_count):
+                try:
+                    logger.info(f"Creating substrate {substrate_index+1}/{total_substrates} (profile {profile_idx+1}, service {service_idx+1})")
+                    if substrate_index >= len(substrate_uuids):
+                        raise IndexError(f"Substrate index {substrate_index} out of range. Available UUIDs: {len(substrate_uuids)}")
+                    
+                    substrate = create_substrate_definition(substrate_index, substrate_uuids[substrate_index], credential_uuid)
+                    blueprint["spec"]["resources"]["substrate_definition_list"].append(substrate)
+                    logger.info(f"Successfully created substrate: {substrate.get('name')}")
+                    substrate_index += 1
+                except Exception as e:
+                    logger.error(f"Error creating substrate {substrate_index+1}: {str(e)}")
+                    raise
+        
+        # Create packages (services × app_profiles with correct 1:1 service mapping)
+        logger.info(f"Creating {total_packages} packages...")
+        package_index = 0
+        for profile_idx in range(app_profiles_count):
+            for service_idx in range(services_count):
+                try:
+                    logger.info(f"Creating package {package_index+1}/{total_packages} (profile {profile_idx+1}, service {service_idx+1})")
+                    if package_index >= len(package_uuids):
+                        raise IndexError(f"Package index {package_index} out of range. Available UUIDs: {len(package_uuids)}")
+                    if service_idx >= len(service_uuids):
+                        raise IndexError(f"Service index {service_idx} out of range. Available UUIDs: {len(service_uuids)}")
+                    
+                    # Each package references exactly ONE service (1:1 mapping)
+                    package = create_package_definition(package_index + 1, package_uuids[package_index], service_uuids[service_idx])
+                    blueprint["spec"]["resources"]["package_definition_list"].append(package)
+                    logger.info(f"Successfully created package: {package.get('name')} -> Service UUID: {service_uuids[service_idx]}")
+                    package_index += 1
+                except Exception as e:
+                    logger.error(f"Error creating package {package_index+1}: {str(e)}")
+                    raise
+        
+        # Create app profiles with deployments
+        logger.info(f"Creating {app_profiles_count} app profiles...")
+        deployment_index = 0
+        for profile_idx in range(app_profiles_count):
+            try:
+                profile_name = "Default" if profile_idx == 0 else f"Profile {profile_idx + 1}"
+                logger.info(f"Creating app profile {profile_idx+1}/{app_profiles_count}: {profile_name}")
+                
+                # Create deployments for this profile (one per service)
+                deployments = []
+                for service_idx in range(services_count):
+                    logger.info(f"Creating deployment {deployment_index+1}/{total_deployments} for profile {profile_name}")
+                    if deployment_index >= len(deployment_uuids):
+                        raise IndexError(f"Deployment index {deployment_index} out of range. Available UUIDs: {len(deployment_uuids)}")
+                    if deployment_index >= len(substrate_uuids):
+                        raise IndexError(f"Substrate index {deployment_index} out of range for deployment. Available UUIDs: {len(substrate_uuids)}")
+                    if deployment_index >= len(package_uuids):
+                        raise IndexError(f"Package index {deployment_index} out of range for deployment. Available UUIDs: {len(package_uuids)}")
+                    
+                    deployment = create_deployment_definition(
+                        deployment_index,
+                        deployment_uuids[deployment_index],
+                        substrate_uuids[deployment_index],
+                        package_uuids[deployment_index]
+                    )
+                    deployments.append(deployment)
+                    logger.info(f"Successfully created deployment: {deployment.get('name')}")
+                    deployment_index += 1
+                
+                app_profile = create_app_profile_definition(profile_name, app_profile_uuids[profile_idx], deployments)
+                blueprint["spec"]["resources"]["app_profile_list"].append(app_profile)
+                logger.info(f"Successfully created app profile: {profile_name} with {len(deployments)} deployments")
+            except Exception as e:
+                logger.error(f"Error creating app profile {profile_idx+1}: {str(e)}")
+                raise
+        
+        # Create client_attrs with deployment coordinates
+        logger.info(f"Creating client_attrs for {len(deployment_uuids)} deployments...")
+        x_positions = [115, 247, 379, 511, 643, 775]  # Extended for more deployments
+        y_positions = [156, 280, 404, 528]  # Multiple rows for many profiles
+        
+        for i, deployment_uuid in enumerate(deployment_uuids):
+            try:
+                x = x_positions[i % len(x_positions)]
+                y = y_positions[i // services_count] if services_count > 0 else y_positions[0]
+                blueprint["spec"]["resources"]["client_attrs"][deployment_uuid] = {
+                    "x": x,
+                    "y": y
+                }
+                logger.info(f"Set client_attrs for deployment {i+1}: x={x}, y={y}")
+            except Exception as e:
+                logger.error(f"Error setting client_attrs for deployment {i+1}: {str(e)}")
+                raise
+        
+        logger.info(f"=== BLUEPRINT GENERATION SUCCESS ===")
+        logger.info(f"Generated blueprint with {services_count} services, {app_profiles_count} profiles, {total_substrates} substrates, {total_packages} packages")
+        return blueprint
+        
+    except Exception as e:
+        logger.error(f"=== BLUEPRINT GENERATION FAILED ===")
+        logger.error(f"Error in generate_blueprint_payload: {str(e)}")
+        logger.error(f"Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        raise
+
+
+def create_service_definition(index: int, service_uuid: str) -> Dict[str, Any]:
+    """Create a service definition with all required actions"""
+    try:
+        logger.info(f"Creating service definition: index={index}, uuid={service_uuid}")
+        actions = []
+        action_names = ["action_create", "action_delete", "action_start", "action_stop", "action_restart"]
+        logger.info(f"Will create {len(action_names)} actions for service {index}")
+    except Exception as e:
+        logger.error(f"Error in create_service_definition: index={index}, error={str(e)}")
+        raise
+    
+    for action_name in action_names:
+        runbook_uuid = str(uuid.uuid4())
+        task_uuid = str(uuid.uuid4())
+        action_uuid = str(uuid.uuid4())
+        
+        action = {
+            "name": action_name,
+            "runbook": {
+                "name": f"{action_name}_{index}_runbook",
+                "variable_list": [],
+                "main_task_local_reference": {
+                    "kind": "app_task",
+                    "uuid": task_uuid
+                },
+                "task_definition_list": [
+                    {
+                        "name": f"{action_name}_{index}_dag",
+                        "target_any_local_reference": {
+                            "kind": "app_service",
+                            "uuid": service_uuid
+                        },
+                        "variable_list": [],
+                        "child_tasks_local_reference_list": [],
+                        "type": "DAG",
+                        "attrs": {
+                            "edges": []
+                        },
+                        "uuid": task_uuid
+                    }
+                ],
+                "uuid": runbook_uuid
+            },
+            "type": "system",
+            "uuid": action_uuid
+        }
+        actions.append(action)
+    
+    return {
+        "name": f"Service{index}",
+        "depends_on_list": [],
+        "variable_list": [],
+        "port_list": [],
+        "action_list": actions,
+        "uuid": service_uuid
+    }
+
+
+def create_substrate_definition(index: int, substrate_uuid: str, credential_uuid: str) -> Dict[str, Any]:
+    """Create a substrate (VM) definition"""
+    try:
+        vm_names = ["VM1", "VM2", "VM1_3", "VM2_4", "VM5", "VM6", "VM7", "VM8", "VM9", "VM10"]  # Extended list
+        vm_name = vm_names[index] if index < len(vm_names) else f"VM{index + 1}"
+        logger.info(f"Creating substrate definition: index={index}, name={vm_name}, uuid={substrate_uuid}")
+    except Exception as e:
+        logger.error(f"Error in create_substrate_definition: index={index}, error={str(e)}")
+        raise
+    
+    return {
+        "variable_list": [],
+        "type": "AHV_VM",
+        "os_type": "Linux",
+        "action_list": [],
+        "create_spec": {
+            "name": "vm-@@{calm_array_index}@@-@@{calm_time}@@",
+            "resources": {
+                "disk_list": [
+                    {
+                        "data_source_reference": {
+                            "kind": "image",
+                            "name": "Centos7HadoopMaster",
+                            "uuid": "77f999c2-df47-49f1-879b-9e8c4974ed04"
+                        },
+                        "device_properties": {
+                            "device_type": "DISK",
+                            "disk_address": {
+                                "device_index": 0,
+                                "adapter_type": "SCSI"
+                            }
+                        },
+                        "disk_size_mib": 20480
+                    }
+                ],
+                "memory_size_mib": 1024,
+                "num_sockets": 1,
+                "num_vcpus_per_socket": 1,
+                "account_uuid": "b6c4e8e7-5e16-443d-a95a-f5a43207ba08",
+                "boot_config": {
+                    "boot_device": {
+                        "disk_address": {
+                            "device_index": 0,
+                            "adapter_type": "SCSI"
+                        }
+                    },
+                    "boot_type": "LEGACY"
+                },
+                "gpu_list": [],
+                "nic_list": [
+                    {
+                        "subnet_reference": {
+                            "uuid": "6a048e7d-912b-4174-8dec-71423e6321f9"
+                        }
+                    }
+                ],
+                "power_state": "ON"
+            },
+            "categories": {},
+            "cluster_reference": {
+                "name": "iris1",
+                "uuid": "000647b3-0885-5bf5-0000-00000001c47d"
+            }
+        },
+        "readiness_probe": {
+            "disable_readiness_probe": True,
+            "address": "@@{platform.status.resources.nic_list[0].ip_endpoint_list[0].ip}@@",
+            "login_credential_local_reference": {
+                "kind": "app_credential",
+                "uuid": credential_uuid
+            }
+        },
+        "name": vm_name,
+        "uuid": substrate_uuid
+    }
+
+
+def create_package_definition(index: int, package_uuid: str, service_uuid: str) -> Dict[str, Any]:
+    """Create a package definition with correct service UUID mapping"""
+    install_runbook_uuid = str(uuid.uuid4())
+    install_task_uuid = str(uuid.uuid4())
+    uninstall_runbook_uuid = str(uuid.uuid4())
+    uninstall_task_uuid = str(uuid.uuid4())
+    
+    return {
+        "type": "DEB",
+        "variable_list": [],
+        "options": {
+            "install_runbook": {
+                "name": f"install_{index}_runbook",
+                "variable_list": [],
+                "main_task_local_reference": {
+                    "kind": "app_task",
+                    "uuid": install_task_uuid
+                },
+                "task_definition_list": [
+                    {
+                        "name": f"install_{index}_dag",
+                        "target_any_local_reference": {
+                            "kind": "app_package",
+                            "uuid": package_uuid
+                        },
+                        "variable_list": [],
+                        "child_tasks_local_reference_list": [],
+                        "type": "DAG",
+                        "attrs": {
+                            "edges": []
+                        },
+                        "uuid": install_task_uuid
+                    }
+                ],
+                "uuid": install_runbook_uuid
+            },
+            "uninstall_runbook": {
+                "name": f"uninstall_{index}_runbook",
+                "variable_list": [],
+                "main_task_local_reference": {
+                    "kind": "app_task",
+                    "uuid": uninstall_task_uuid
+                },
+                "task_definition_list": [
+                    {
+                        "name": f"uninstall_{index}_dag",
+                        "target_any_local_reference": {
+                            "kind": "app_package",
+                            "uuid": package_uuid
+                        },
+                        "variable_list": [],
+                        "child_tasks_local_reference_list": [],
+                        "type": "DAG",
+                        "attrs": {
+                            "edges": []
+                        },
+                        "uuid": uninstall_task_uuid
+                    }
+                ],
+                "uuid": uninstall_runbook_uuid
+            }
+        },
+        "service_local_reference_list": [
+            {
+                "kind": "app_service",
+                "uuid": service_uuid
+            }
+        ],
+        "name": f"Package{index}",
+        "uuid": package_uuid
+    }
+
+
+def create_deployment_definition(index: int, deployment_uuid: str, substrate_uuid: str, package_uuid: str) -> Dict[str, Any]:
+    """Create a deployment definition"""
+    return {
+        "variable_list": [],
+        "action_list": [],
+        "min_replicas": "1",
+        "name": f"deployment_{index + 1}",
+        "max_replicas": "1",
+        "substrate_local_reference": {
+            "kind": "app_substrate",
+            "uuid": substrate_uuid
+        },
+        "default_replicas": "1",
+        "type": "GREENFIELD",
+        "package_local_reference_list": [
+            {
+                "kind": "app_package",
+                "uuid": package_uuid
+            }
+        ],
+        "uuid": deployment_uuid
+    }
+
+
+def create_app_profile_definition(name: str, profile_uuid: str, deployments: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Create an app profile definition with deployments"""
+    return {
+        "name": name,
+        "action_list": [],
+        "variable_list": [],
+        "deployment_create_list": deployments,
+        "environment_reference_list": [],
+        "uuid": profile_uuid
+    }
+
+
 def scale_payload_with_rules(data: Any, entity_counts: Dict[str, int], mapping_rules: List[Dict[str, Any]], api_type: str = 'blueprint', task_execution: str = 'parallel', blueprint_type: str = 'multi_vm', profile_options: Dict[str, int] = None, include_guest_customization: bool = False) -> Any:
     """Scale the payload and apply mapping rules.
     
@@ -2593,34 +3504,34 @@ def scale_payload_with_rules(data: Any, entity_counts: Dict[str, int], mapping_r
     # Load default rules configuration
     default_rules_data = load_default_rules(api_type)
     
-    # For Blueprint: Calculate entity counts based on correct relationships
-    # The relationship is: app_profiles -> deployments -> substrates/packages
-    # Total substrates = app_profile_count × deployments_per_profile
-    # Total packages = app_profile_count × deployments_per_profile
-    # Services can be independent
+    # For Blueprint: NEW RULES - services × app_profiles = substrates/packages
+    logger.info(f"=== SCALE_PAYLOAD_WITH_RULES DEBUG ===")
+    logger.info(f"api_type: '{api_type}'")
+    logger.info(f"blueprint_type: '{blueprint_type}'")
+    logger.info(f"entity_counts: {entity_counts}")
+    
     if api_type == 'blueprint':
+        logger.info("ENTERING BLUEPRINT LOGIC PATH")
         # Get user-specified counts
         app_profile_count = entity_counts.get('spec.resources.app_profile_list', 1)
-        deployments_per_profile = entity_counts.get('spec.resources.app_profile_list.deployment_create_list', 1)
+        services_count = entity_counts.get('spec.resources.service_definition_list', 1)
+        logger.info(f"Extracted counts: services={services_count}, app_profiles={app_profile_count}")
         
         # For single_vm, force to 1 profile with 1 deployment and 1 service
         if blueprint_type == 'single_vm':
+            logger.info("SINGLE_VM detected - forcing counts to 1")
+            services_count = 1
             app_profile_count = 1
-            deployments_per_profile = 1
             entity_counts['spec.resources.service_definition_list'] = 1
             entity_counts['spec.resources.app_profile_list'] = 1
-            entity_counts['spec.resources.app_profile_list.deployment_create_list'] = 1
         
-        # Calculate total deployments across all profiles
-        total_deployments = app_profile_count * deployments_per_profile
+        # NEW BLUEPRINT GENERATION LOGIC - Always use the new rules
+        logger.info(f"CALLING generate_blueprint_payload with services={services_count}, app_profiles={app_profile_count}")
+        return generate_blueprint_payload(services_count, app_profile_count)
+    else:
+        logger.info(f"NOT BLUEPRINT LOGIC - api_type is '{api_type}', continuing with old logic")
         
-        # Substrates and Packages = total deployments (each deployment needs one of each)
-        entity_counts['spec.resources.substrate_definition_list'] = total_deployments
-        entity_counts['spec.resources.package_definition_list'] = total_deployments
-        
-        # Keep credential at 1 (or user-specified if they explicitly set it)
-        if 'spec.resources.credential_definition_list' not in entity_counts:
-            entity_counts['spec.resources.credential_definition_list'] = 1
+        # OLD CODE REMOVED - No longer needed
     
     # For runbooks, exclude task_definition_list from generic scaling
     # (handled specially in apply_runbook_specific_fixes)
@@ -2637,11 +3548,9 @@ def scale_payload_with_rules(data: Any, entity_counts: Dict[str, int], mapping_r
     
     # Apply API-type-specific fixes FIRST (before name suffixes)
     if api_type == 'blueprint':
-        # Load runbook default rules to apply to blueprint runbooks
-        runbook_rules = load_default_rules('runbook')
-        
-        # Blueprint: credential refs, package runbook refs, client_attrs, etc.
-        scaled = apply_blueprint_specific_fixes(scaled, blueprint_type, entity_counts, runbook_rules)
+        # NOTE: Blueprint generation now uses generate_blueprint_payload() 
+        # This code path should not be reached for blueprints
+        logger.warning("Old blueprint scaling path reached - this should not happen with new logic")
         # Apply profile options (remove or keep optional fields based on user selection)
         scaled = apply_profile_options(scaled, profile_options)
         # Handle guest_customization based on toggle
@@ -2696,6 +3605,9 @@ def scale_payload_with_rules(data: Any, entity_counts: Dict[str, int], mapping_r
     # This prevents "entity already exists" errors when creating new resources
     if api_type == 'blueprint':
         scaled = regenerate_all_entity_uuids(scaled)
+        
+        # CRITICAL FIX: Ensure proper 1:1 deployment-to-entity correspondence
+        scaled = fix_blueprint_deployment_references(scaled)
     
     # CRITICAL: Fix main_task_local_reference.uuid = task_definition_list[0].uuid
     # This MUST be called AFTER all UUID regeneration to ensure mapping is correct
@@ -2722,6 +3634,46 @@ def test_dropdowns():
 def debug_project():
     """Debug page for project selection"""
     return open('/Users/mohan.as1/Documents/payload-scaler/debug_project_selection.html').read()
+
+
+@app.route('/api/test/blueprint-generation')
+def test_blueprint_generation():
+    """Test endpoint for blueprint generation rules"""
+    try:
+        services_count = int(request.args.get('services', 2))
+        app_profiles_count = int(request.args.get('profiles', 2))
+        
+        logger.info(f"Testing blueprint generation: services={services_count}, profiles={app_profiles_count}")
+        
+        # Generate blueprint with new rules
+        blueprint = generate_blueprint_payload(services_count, app_profiles_count)
+        
+        # Calculate actual counts for verification
+        resources = blueprint.get('spec', {}).get('resources', {})
+        actual_counts = {
+            'services': len(resources.get('service_definition_list', [])),
+            'app_profiles': len(resources.get('app_profile_list', [])),
+            'substrates': len(resources.get('substrate_definition_list', [])),
+            'packages': len(resources.get('package_definition_list', [])),
+            'credentials': len(resources.get('credential_definition_list', [])),
+            'total_deployments': sum(len(profile.get('deployment_create_list', [])) for profile in resources.get('app_profile_list', [])),
+            'client_attrs_count': len(resources.get('client_attrs', {}))
+        }
+        
+        return jsonify({
+            'success': True,
+            'input': {
+                'services': services_count,
+                'app_profiles': app_profiles_count
+            },
+            'generated_counts': actual_counts,
+            'blueprint': blueprint,
+            'formatted_blueprint': json.dumps(blueprint, indent=2)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error testing custom blueprint generation: {e}")
+        return jsonify({'error': f'Error generating blueprint: {str(e)}'}), 500
 
 
 @app.route('/api/test/project-resources')
@@ -3186,6 +4138,11 @@ def generate_payload_from_rules():
                 
                 scaled_payload = apply_live_uuids_to_payload(scaled_payload, live_uuids)
             
+            # CRITICAL FIX: Apply deployment reference fixes AFTER live UUIDs are applied
+            if api_type == 'blueprint':
+                logger.info("Applying final blueprint deployment reference fixes")
+                scaled_payload = fix_blueprint_deployment_references(scaled_payload)
+            
             # Store response history (last 5 responses per entity)
             save_response_history(api_url, scaled_payload, entity_counts)
             
@@ -3199,7 +4156,27 @@ def generate_payload_from_rules():
             save_api_request_response('/api/payload/generate', 'POST', request_data, response_data, 200)
             return response
         except Exception as e:
-            error_response = {'error': f'Error generating payload: {str(e)}'}
+            # Enhanced error logging
+            logger.error(f"=== PAYLOAD GENERATION ERROR ===")
+            logger.error(f"API URL: {api_url}")
+            logger.error(f"Entity counts: {entity_counts}")
+            logger.error(f"Blueprint type: {blueprint_type}")
+            logger.error(f"Error type: {type(e).__name__}")
+            logger.error(f"Error message: {str(e)}")
+            
+            import traceback
+            full_traceback = traceback.format_exc()
+            logger.error(f"Full traceback:\n{full_traceback}")
+            
+            # Enhanced error response
+            error_response = {
+                'error': f'Error generating payload: {str(e)}',
+                'error_type': type(e).__name__,
+                'api_url': api_url,
+                'entity_counts': entity_counts,
+                'blueprint_type': blueprint_type,
+                'traceback': full_traceback.split('\n')[-10:]  # Last 10 lines of traceback
+            }
             save_api_request_response('/api/payload/generate', 'POST', request_data, error_response, 500)
             return jsonify(error_response), 500
     
@@ -4112,13 +5089,15 @@ def apply_comprehensive_uuid_mappings(payload: Dict[str, Any], live_uuids: Dict[
                             logger.info(f"Updated package_local_reference_list[{i}] UUID: {old_uuid} -> {app_package_definition_uuids[i]}")
             
             # Handle service_local_reference_list
-            if 'service_local_reference_list' in obj and isinstance(obj['service_local_reference_list'], list):
-                for i, service_ref in enumerate(obj['service_local_reference_list']):
-                    if isinstance(service_ref, dict) and service_ref.get('kind') == 'app_service':
-                        if i < len(app_service_definition_uuids):
-                            old_uuid = service_ref.get('uuid')
-                            service_ref['uuid'] = app_service_definition_uuids[i]
-                            logger.info(f"Updated service_local_reference_list[{i}] UUID: {old_uuid} -> {app_service_definition_uuids[i]}")
+            # NOTE: Commented out for packages as they should already be correctly mapped by cycling logic
+            # This was overriding the correct package-to-service cycling
+            # if 'service_local_reference_list' in obj and isinstance(obj['service_local_reference_list'], list):
+            #     for i, service_ref in enumerate(obj['service_local_reference_list']):
+            #         if isinstance(service_ref, dict) and service_ref.get('kind') == 'app_service':
+            #             if i < len(app_service_definition_uuids):
+            #                 old_uuid = service_ref.get('uuid')
+            #                 service_ref['uuid'] = app_service_definition_uuids[i]
+            #                 logger.info(f"Updated service_local_reference_list[{i}] UUID: {old_uuid} -> {app_service_definition_uuids[i]}")
             
             # Handle any other app_package references
             if obj.get('kind') == 'app_package' and 'uuid' in obj and app_package_definition_uuids:
@@ -4958,6 +5937,69 @@ def test_pc_connection():
         
         return jsonify(error_response), 500
 
+@app.route('/api/simplified-entity-config', methods=['GET'])
+def get_simplified_entity_config():
+    """Return simplified entity configuration with only user-editable fields"""
+    try:
+        simplified_config = {
+            "user_inputs": [
+                {
+                    "id": "app_profiles",
+                    "name": "App Profiles", 
+                    "description": "Number of application profiles",
+                    "icon": "📱",
+                    "min_value": 1,
+                    "max_value": 10,
+                    "default_value": 2
+                },
+                {
+                    "id": "services",
+                    "name": "Services",
+                    "description": "Number of services per profile", 
+                    "icon": "🔧",
+                    "min_value": 1,
+                    "max_value": 10,
+                    "default_value": 2
+                },
+                {
+                    "id": "credentials",
+                    "name": "Credentials",
+                    "description": "Number of credentials",
+                    "icon": "🔐", 
+                    "min_value": 1,
+                    "max_value": 5,
+                    "default_value": 1
+                }
+            ],
+            "hardcoded_rules": [
+                {
+                    "name": "Packages",
+                    "formula": "= App Profiles × Services",
+                    "description": "One package per deployment (cycles through services)",
+                    "icon": "📦"
+                },
+                {
+                    "name": "Deployments per Profile", 
+                    "formula": "= Services",
+                    "description": "Each profile has deployments equal to service count",
+                    "icon": "🚀"
+                },
+                {
+                    "name": "Substrates",
+                    "formula": "= App Profiles × Services", 
+                    "description": "Total substrates calculated automatically",
+                    "icon": "🏗️"
+                }
+            ],
+            "message": "Only the 3 user inputs above are editable. All other values are calculated automatically using hardcoded rules."
+        }
+        
+        return jsonify(simplified_config)
+    except Exception as e:
+        logger.error(f"Error getting simplified entity config: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/log-frontend', methods=['POST'])
 def log_frontend():
     """Receive logs from frontend JavaScript"""
@@ -4979,6 +6021,18 @@ def log_frontend():
     except Exception as e:
         logger.error(f"Error logging frontend message: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/simplified')
+def simplified_ui():
+    """Serve the simplified UI with only 3 user inputs"""
+    return render_template('simplified_ui.html')
+
+
+@app.route('/')
+def home():
+    """Redirect to simplified UI"""
+    return render_template('simplified_ui.html')
 
 
 if __name__ == '__main__':

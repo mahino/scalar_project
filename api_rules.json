@@ -28,7 +28,6 @@
       "spec.resources.substrate_definition_list.action_list",
       "spec.resources.substrate_definition_list.create_spec.resources.disk_list",
       "spec.resources.substrate_definition_list.create_spec.resources.gpu_list",
-      "spec.resources.substrate_definition_list.create_spec.resources.serial_port_list",
       "spec.resources.substrate_definition_list.create_spec.resources.nic_list",
       "spec.resources.package_definition_list",
       "spec.resources.package_definition_list.variable_list",
@@ -48,8 +47,8 @@
       "spec.resources.app_profile_list.deployment_create_list.package_local_reference_list"
     ],
     "task_execution": "parallel",
-    "created_at": "994369da",
+    "created_at": "60e733fa",
     "has_template": true,
-    "template_file": "/Users/mohan.as1/Documents/payload-scaler/templates_store/blueprint/blueprint.json"
+    "template_file": "/Users/mohan.as1/Documents/scalar_project/templates_store/blueprint/blueprint.json"
   }
 }

@@ -2558,21 +2558,21 @@ Example structure:
                                     <i class="bi bi-rocket-takeoff"></i>
                                 </div>
                                 <div class="hierarchy-entity-info">
-                                    <span class="hierarchy-entity-name">Deployments per Profile</span>
-                                    <span class="hierarchy-entity-path">app_profile_list.deployment_create_list</span>
+                                    <span class="hierarchy-entity-name">Services</span>
+                                    <span class="hierarchy-entity-path">service_definition_list</span>
                                 </div>
                                 <div class="hierarchy-entity-input">
-                                    <button class="count-btn" onclick="adjustRulesDeploymentCount(-1)">-</button>
-                                    <input type="number" id="rulesDeploymentCountInput" value="1" min="1" max="50" 
-                                           onchange="onRulesDeploymentCountChange(this.value)">
-                                    <button class="count-btn" onclick="adjustRulesDeploymentCount(1)">+</button>
+                                    <button class="count-btn" onclick="adjustRulesServiceCount(-1)">-</button>
+                                    <input type="number" id="rulesServiceCountInput" value="1" min="1" max="50" 
+                                           onchange="onRulesServiceCountChange(this.value)">
+                                    <button class="count-btn" onclick="adjustRulesServiceCount(1)">+</button>
                                 </div>
                             </div>
                             
                             <!-- Linked Info -->
                             <div class="linked-entities-info">
                                 <i class="bi bi-link-45deg"></i>
-                                <span>Auto-calculated: Substrates & Packages = App Profiles × Deployments</span>
+                                <span>Auto-calculated: Substrates & Packages = App Profiles × Services</span>
                             </div>
                         </div>
                         
@@ -2584,43 +2584,6 @@ Example structure:
                                 <div class="sub-entity-header">
                                     <span class="header-name">Entity Name</span>
                                     <span class="header-count">Count</span>
-                                </div>
-                                <!-- Substrate (Calculated) -->
-                                <div class="sub-entity-card linked-entity">
-                                    <div class="sub-entity-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
-                                        <i class="bi bi-hdd-network"></i>
-                                    </div>
-                                    <div class="sub-entity-details">
-                                        <span class="sub-entity-name">Substrates</span>
-                                    </div>
-                                    <div class="sub-entity-count">
-                                        <span class="calculated-badge" id="rulesSubstrateCalc"><i class="bi bi-calculator"></i> = <span>1</span></span>
-                                    </div>
-                                </div>
-                                <!-- Package (Calculated) -->
-                                <div class="sub-entity-card linked-entity">
-                                    <div class="sub-entity-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
-                                        <i class="bi bi-box"></i>
-                                    </div>
-                                    <div class="sub-entity-details">
-                                        <span class="sub-entity-name">Packages</span>
-                                    </div>
-                                    <div class="sub-entity-count">
-                                        <span class="calculated-badge" id="rulesPackageCalc"><i class="bi bi-calculator"></i> = <span>1</span></span>
-                                    </div>
-                                </div>
-                                <!-- Services -->
-                                <div class="sub-entity-card" data-entity="service_definition_list">
-                                    <div class="sub-entity-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                                        <i class="bi bi-box-seam"></i>
-                                    </div>
-                                    <div class="sub-entity-details">
-                                        <span class="sub-entity-name">Services</span>
-                                    </div>
-                                    <div class="sub-entity-count">
-                                        <input type="number" value="1" min="1" max="100" id="rulesServiceCountInput"
-                                               onchange="updateRulesSubEntityCount('service_definition_list', this.value)">
-                                    </div>
                                 </div>
                                 <!-- Credentials -->
                                 <div class="sub-entity-card" data-entity="credential_definition_list">
@@ -2966,21 +2929,21 @@ Example structure:
                                         <i class="bi bi-rocket-takeoff"></i>
                                     </div>
                                     <div class="hierarchy-entity-info">
-                                        <span class="hierarchy-entity-name">Deployments per Profile</span>
-                                        <span class="hierarchy-entity-path">deployment_create_list</span>
+                                        <span class="hierarchy-entity-name">Services</span>
+                                        <span class="hierarchy-entity-path">service_definition_list</span>
                                     </div>
                                     <div class="hierarchy-entity-input">
-                                        <button class="count-btn" onclick="adjustDeploymentCount(-1)">-</button>
-                                        <input type="number" id="deploymentCountInput" value="1" min="1" max="50" 
-                                               onchange="onDeploymentCountChange(this.value)">
-                                        <button class="count-btn" onclick="adjustDeploymentCount(1)">+</button>
+                                        <button class="count-btn" onclick="adjustServiceCount(-1)">-</button>
+                                        <input type="number" id="serviceCountInput" value="1" min="1" max="50" 
+                                               onchange="onServiceCountChange(this.value)">
+                                        <button class="count-btn" onclick="adjustServiceCount(1)">+</button>
                                     </div>
                                 </div>
                                 
                                 <!-- Linked Info -->
                                 <div class="linked-entities-info">
                                     <i class="bi bi-link-45deg"></i>
-                                    <span>Auto-calculated: Substrates & Packages = App Profiles × Deployments</span>
+                                    <span>Auto-calculated: Substrates & Packages = App Profiles × Services</span>
                                 </div>
                             </div>
                             
@@ -2992,43 +2955,6 @@ Example structure:
                                     <div class="sub-entity-header">
                                         <span class="header-name">Entity Name</span>
                                         <span class="header-count">Count</span>
-                                    </div>
-                                    <!-- Substrate (Calculated) -->
-                                    <div class="sub-entity-card linked-entity">
-                                        <div class="sub-entity-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
-                                            <i class="bi bi-hdd-network"></i>
-                                        </div>
-                                        <div class="sub-entity-details">
-                                            <span class="sub-entity-name">Substrates</span>
-                                        </div>
-                                        <div class="sub-entity-count">
-                                            <span class="calculated-badge" id="substrateCalc"><i class="bi bi-calculator"></i> = <span>1</span></span>
-                                        </div>
-                                    </div>
-                                    <!-- Package (Calculated) -->
-                                    <div class="sub-entity-card linked-entity">
-                                        <div class="sub-entity-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
-                                            <i class="bi bi-box"></i>
-                                        </div>
-                                        <div class="sub-entity-details">
-                                            <span class="sub-entity-name">Packages</span>
-                                        </div>
-                                        <div class="sub-entity-count">
-                                            <span class="calculated-badge" id="packageCalc"><i class="bi bi-calculator"></i> = <span>1</span></span>
-                                        </div>
-                                    </div>
-                                    <!-- Services -->
-                                    <div class="sub-entity-card" data-entity="service_definition_list">
-                                        <div class="sub-entity-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                                            <i class="bi bi-box-seam"></i>
-                                        </div>
-                                        <div class="sub-entity-details">
-                                            <span class="sub-entity-name">Services</span>
-                                        </div>
-                                        <div class="sub-entity-count">
-                                            <input type="number" value="1" min="1" max="100" id="serviceCountInput" data-entity="service_definition_list"
-                                                   onchange="updateSubEntityCount('service_definition_list', this.value)">
-                                        </div>
                                     </div>
                                     <!-- Credentials -->
                                     <div class="sub-entity-card" data-entity="credential_definition_list">
@@ -3053,12 +2979,12 @@ Example structure:
                             <div class="relationship-diagram">
                                 <div class="rel-node rel-profile">App Profile</div>
                                 <div class="rel-arrow">→</div>
-                                <div class="rel-node rel-deployment">Deployment</div>
+                                <div class="rel-node rel-deployment">Service</div>
                                 <div class="rel-arrow">→</div>
                                 <div class="rel-node rel-substrate">Substrate/Package</div>
                             </div>
                             <div class="relationship-notes">
-                                <small><i class="bi bi-info-circle"></i> Total Substrates/Packages = App Profiles × Deployments per Profile</small>
+                                <small><i class="bi bi-info-circle"></i> Total Substrates/Packages = App Profiles × Services</small>
                             </div>
                         </div>
                         
@@ -4707,11 +4633,10 @@ Example structure:
             // If single_vm, set all to 1 and disable
             if (type === 'single_vm') {
                 // Set all counts to 1
+                // NOTE: substrate_definition_list and package_definition_list are calculated by backend
                 rulesTempCounts['spec.resources.app_profile_list'] = 1;
                 rulesTempCounts['spec.resources.app_profile_list.deployment_create_list'] = 1;
                 rulesTempCounts['spec.resources.service_definition_list'] = 1;
-                rulesTempCounts['spec.resources.substrate_definition_list'] = 1;
-                rulesTempCounts['spec.resources.package_definition_list'] = 1;
                 
                 // Update inputs
                 if (appProfileInput) {
@@ -4798,11 +4723,8 @@ Example structure:
             const deploymentsPerProfile = parseInt(document.getElementById('rulesDeploymentCountInput')?.value) || 1;
             const totalDeployments = appProfiles * deploymentsPerProfile;
             
-            // Update calculated counts
-            rulesTempCounts['spec.resources.substrate_definition_list'] = totalDeployments;
-            rulesTempCounts['spec.resources.package_definition_list'] = totalDeployments;
-            
-            // Update UI badges
+            // Update UI badges to show calculated values (for display only)
+            // NOTE: Do NOT store these in rulesTempCounts - let backend calculate them
             const substrateCalc = document.querySelector('#rulesSubstrateCalc span');
             const packageCalc = document.querySelector('#rulesPackageCalc span');
             if (substrateCalc) substrateCalc.textContent = totalDeployments;
@@ -5360,15 +5282,19 @@ Example structure:
             
             // Account - Send both original account_uuid and pc_uuid
             const simpleAccountSelect = document.getElementById('simpleAccountSelect');
+            console.log('simpleAccountSelect:', simpleAccountSelect);
             if (simpleAccountSelect && simpleAccountSelect.value) {
-                result.account.uuid = simpleAccountSelect.selectedOptions[0]?.getAttribute('data-pc-uuid') || simpleAccountSelect.value; // Use pc_uuid for payload generation
+                result.account.uuid = simpleAccountSelect.data_pc_uuid; // Use pc_uuid for payload generation
+                result.account.pc_uuid = simpleAccountSelect.data_pc_uuid;
                 result.account.name = simpleAccountSelect.selectedOptions[0]?.textContent || simpleAccountSelect.value;
                 result.account.original_uuid = simpleAccountSelect.value; // Original account UUID for images API
                 console.log('Account from simple dropdown:', result.account);
-                console.log('Account UUID (for payload):', result.account.uuid);
+                console.log('Account UUID (for payload):', result.account.pc_uuid);
                 console.log('Account Original UUID (for images):', result.account.original_uuid);
+                console.log('Account PC UUID:', result.account.pc_uuid);
             } else if (accountDropdown && accountDropdown.getValue()) {
                 result.account.uuid = accountDropdown.getValue();
+                result.account.pc_uuid = accountDropdown.getAttribute('data_pc_uuid');
                 result.account.name = accountDropdown.getText() || accountDropdown.getValue();
                 console.log('Account from complex dropdown:', result.account);
             }
@@ -5494,9 +5420,10 @@ Example structure:
                         option.value = account.uuid; // Use original account_uuid as the value
                         option.textContent = account.name;
                         option.title = `Account UUID: ${account.uuid} | PC UUID: ${account.pc_uuid} | Status: ${account.status}`;
-                        option.setAttribute('data-pc-uuid', account.pc_uuid); // Store pc_uuid for reference if needed
+                        option.data_pc_uuid = account.pc_uuid
                         accountSelect.appendChild(option);
                     });
+                    console.log('Account select: mohan', accountSelect);
                 }).catch(error => {
                     console.error('Error fetching account details:', error);
                     console.error('Full error details:', error);
@@ -7795,11 +7722,8 @@ Example structure:
             const deploymentsPerProfile = parseInt(document.getElementById('deploymentCountInput')?.value) || 1;
             const totalDeployments = appProfiles * deploymentsPerProfile;
             
-            // Update calculated counts (these will be used by backend)
-            blueprintEntityCounts.substrate_definition_list = totalDeployments;
-            blueprintEntityCounts.package_definition_list = totalDeployments;
-            
-            // Update UI badges
+            // Update UI badges to show calculated values (for display only)
+            // NOTE: Do NOT store these in blueprintEntityCounts - let backend calculate them
             const substrateCalc = document.querySelector('#substrateCalc span');
             const packageCalc = document.querySelector('#packageCalc span');
             if (substrateCalc) substrateCalc.textContent = totalDeployments;
@@ -7881,12 +7805,12 @@ Example structure:
                 const totalDeployments = appProfileCount * deploymentsPerProfile;
                 
                 // Build entity counts for the API
+                // NOTE: substrate_definition_list and package_definition_list are calculated by backend hardcoded rules
+                // Do NOT send them in the payload to allow proper backend calculation
                 const entityCounts = {
                     'spec.resources.app_profile_list': appProfileCount,
                     'spec.resources.app_profile_list.deployment_create_list': deploymentsPerProfile,
                     'spec.resources.service_definition_list': serviceCount,
-                    'spec.resources.substrate_definition_list': totalDeployments,
-                    'spec.resources.package_definition_list': totalDeployments,
                     'spec.resources.credential_definition_list': credentialCount
                 };
                 
@@ -9354,6 +9278,43 @@ Example structure:
                 console.error('Error during initialization:', error);
             }
         });
+
+        // Service count adjustment functions
+        function adjustServiceCount(delta) {
+            const input = document.getElementById('serviceCountInput');
+            if (input) {
+                const currentValue = parseInt(input.value) || 1;
+                const newValue = Math.max(1, Math.min(50, currentValue + delta));
+                input.value = newValue;
+                onServiceCountChange(newValue);
+            }
+        }
+
+        function onServiceCountChange(value) {
+            const serviceCount = parseInt(value) || 1;
+            console.log('Service count changed to:', serviceCount);
+            
+            // Update any related calculations or UI elements
+            // This function can be expanded to handle service count changes
+        }
+
+        function adjustRulesServiceCount(delta) {
+            const input = document.getElementById('rulesServiceCountInput');
+            if (input) {
+                const currentValue = parseInt(input.value) || 1;
+                const newValue = Math.max(1, Math.min(50, currentValue + delta));
+                input.value = newValue;
+                onRulesServiceCountChange(newValue);
+            }
+        }
+
+        function onRulesServiceCountChange(value) {
+            const serviceCount = parseInt(value) || 1;
+            console.log('Rules service count changed to:', serviceCount);
+            
+            // Update any related calculations or UI elements
+            // This function can be expanded to handle rules service count changes
+        }
     </script>
 </body>
 </html>
