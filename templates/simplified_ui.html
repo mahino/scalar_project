@@ -304,6 +304,12 @@
                     <input type="number" id="credentials" min="1" max="5" value="1">
                     <div class="description">Number of credentials</div>
                 </div>
+                
+                <div class="input-group">
+                    <label for="blueprint_name">🏷️ Blueprint Name <span style="color: #888; font-size: 12px;">(Optional)</span></label>
+                    <input type="text" id="blueprint_name" placeholder="Leave empty for default: st_bp_gen_timestamp">
+                    <div class="description">Custom name for the blueprint (optional)</div>
+                </div>
             </div>
             
             <div class="card hardcoded-rules">
@@ -421,6 +427,7 @@
             const appProfiles = parseInt(document.getElementById('app_profiles').value) || 2;
             const services = parseInt(document.getElementById('services').value) || 2;
             const credentials = parseInt(document.getElementById('credentials').value) || 1;
+            const blueprintName = document.getElementById('blueprint_name').value.trim();
             
             // Show loading
             document.querySelector('.loading').style.display = 'block';
@@ -438,15 +445,22 @@
                     "spec.resources.package_definition_list": 1
                 };
                 
+                const requestBody = {
+                    api_url: 'blueprint',
+                    entity_counts: entityCounts
+                };
+                
+                // Add blueprint name if provided
+                if (blueprintName) {
+                    requestBody.blueprint_name = blueprintName;
+                }
+                
                 const response = await fetch('/api/payload/generate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        api_url: 'blueprint',
-                        entity_counts: entityCounts
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!response.ok) {

@@ -2901,6 +2901,19 @@ Example structure:
                             </button>
                         </div>
                         
+                        <!-- Blueprint Name Input -->
+                        <div class="mb-4">
+                            <label class="form-label" for="blueprintNameInput">
+                                <i class="bi bi-tag"></i> Blueprint Name <span class="badge bg-secondary">Optional</span>
+                            </label>
+                            <input type="text" class="form-control" id="blueprintNameInput" 
+                                   placeholder="Leave empty for default: st_bp_gen_timestamp"
+                                   style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                            <div class="form-text" style="color: var(--text-secondary); font-size: 12px; margin-top: 6px;">
+                                Custom name for the generated blueprint. If empty, defaults to "st_bp_gen_YYYYMMDD_HHMMSS"
+                            </div>
+                        </div>
+                        
                         <!-- Blueprint Entity Hierarchy -->
                         <div class="hierarchy-container">
                             <!-- App Profiles (Primary) -->
@@ -5281,22 +5294,39 @@ Example structure:
             }
             
             // Account - Send both original account_uuid and pc_uuid
+            console.log('Account from selectedProject:', selectedProject);
             const simpleAccountSelect = document.getElementById('simpleAccountSelect');
             console.log('simpleAccountSelect:', simpleAccountSelect);
             if (simpleAccountSelect && simpleAccountSelect.value) {
-                result.account.uuid = simpleAccountSelect.data_pc_uuid; // Use pc_uuid for payload generation
-                result.account.pc_uuid = simpleAccountSelect.data_pc_uuid;
-                result.account.name = simpleAccountSelect.selectedOptions[0]?.textContent || simpleAccountSelect.value;
+                // Get the selected option to access its accuuid attribute
+                const selectedOption = simpleAccountSelect.selectedOptions[0];
+                const pcUuid = selectedOption?.getAttribute('accuuid');
+                
+                result.account.uuid = simpleAccountSelect.value; // Original account UUID
+                result.account.pc_uuid = pcUuid; // PC UUID from selected option
+                result.account.name = selectedOption?.textContent || simpleAccountSelect.value;
                 result.account.original_uuid = simpleAccountSelect.value; // Original account UUID for images API
+                
                 console.log('Account from simple dropdown:', result.account);
-                console.log('Account UUID (for payload):', result.account.pc_uuid);
+                console.log('Selected option:', selectedOption);
+                console.log('PC UUID from selected option:', pcUuid);
+                console.log('Account UUID (original):', result.account.uuid);
+                console.log('Account PC UUID (for payload):', result.account.pc_uuid);
                 console.log('Account Original UUID (for images):', result.account.original_uuid);
-                console.log('Account PC UUID:', result.account.pc_uuid);
             } else if (accountDropdown && accountDropdown.getValue()) {
-                result.account.uuid = accountDropdown.getValue();
-                result.account.pc_uuid = accountDropdown.getAttribute('data_pc_uuid');
-                result.account.name = accountDropdown.getText() || accountDropdown.getValue();
+                // For complex dropdown, we need to get the pc_uuid differently
+                const selectedValue = accountDropdown.getValue();
+                const accountSelect = document.getElementById('accountSelect');
+                const selectedOption = accountSelect?.querySelector(`option[value="${selectedValue}"]`);
+                const pcUuid = selectedOption?.getAttribute('accuuid');
+                
+                result.account.uuid = selectedValue;
+                result.account.pc_uuid = pcUuid;
+                result.account.name = accountDropdown.getText() || selectedValue;
+                
                 console.log('Account from complex dropdown:', result.account);
+                console.log('Complex dropdown selected option:', selectedOption);
+                console.log('Complex dropdown PC UUID:', pcUuid);
             }
             
             // Cluster - THIS IS THE KEY PART
@@ -5420,7 +5450,8 @@ Example structure:
                         option.value = account.uuid; // Use original account_uuid as the value
                         option.textContent = account.name;
                         option.title = `Account UUID: ${account.uuid} | PC UUID: ${account.pc_uuid} | Status: ${account.status}`;
-                        option.data_pc_uuid = account.pc_uuid
+                        option.setAttribute('accuuid', account.pc_uuid);
+                        console.log(`Account option created: ${account.name} | UUID: ${account.uuid} | PC UUID: ${account.pc_uuid}`);
                         accountSelect.appendChild(option);
                     });
                     console.log('Account select: mohan', accountSelect);
@@ -7858,6 +7889,10 @@ Example structure:
                 console.log('Live UUIDs:', liveUUIDs);
                 console.log(`App Profiles: ${appProfileCount}, Deployments/Profile: ${deploymentsPerProfile}, Total Substrates/Packages: ${totalDeployments}`);
                 
+                // Get blueprint name from input field
+                const blueprintNameInput = document.getElementById('blueprintNameInput');
+                const blueprintName = blueprintNameInput ? blueprintNameInput.value.trim() : '';
+                
                 const requestBody = {
                     api_url: selectedBlueprintEntity,
                     entity_counts: entityCounts,
@@ -7865,6 +7900,11 @@ Example structure:
                     profile_options: profileOptions,
                     include_guest_customization: includeGuestCustomization
                 };
+                
+                // Add blueprint name if provided
+                if (blueprintName) {
+                    requestBody.blueprint_name = blueprintName;
+                }
                 
                 // Add live UUIDs if available
                 if (hasLiveData) {

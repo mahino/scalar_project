@@ -16,7 +16,6 @@ from modules.logging_manager import LoggingManager
 from modules.storage_manager import StorageManager
 from modules.payload_scaler import PayloadScaler
 from modules.blueprint_generator import BlueprintGenerator
-from modules.live_uuid_processor import LiveUuidProcessor
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -29,7 +28,6 @@ logger = logging_manager.get_logger()
 storage_manager = StorageManager(BASE_DIR, logger)
 payload_scaler = PayloadScaler(logger)
 blueprint_generator = BlueprintGenerator(logger)
-live_uuid_processor = LiveUuidProcessor(logger)
 
 # ============================================================================
 # BASIC ROUTES
@@ -87,15 +85,11 @@ def generate_payload_from_rules():
             app_profiles = entity_counts.get('spec.resources.app_profile_list', 1)
             services = entity_counts.get('spec.resources.service_definition_list', 1)
             
-            # Extract blueprint name from user input (optional)
-            blueprint_name = data.get('blueprint_name')
-            
             # Generate blueprint payload
-            scaled_payload = blueprint_generator.generate_blueprint_payload(services, app_profiles, blueprint_name)
+            scaled_payload = blueprint_generator.generate_blueprint_payload(services, app_profiles)
             
             # Apply hardcoded rules and fixes
             scaled_payload = blueprint_generator.fix_blueprint_deployment_references(scaled_payload)
-            
             
         elif storage_manager.get_api_rule_set(api_url):
             # Use existing rules to scale payload for other APIs
@@ -110,13 +104,6 @@ def generate_payload_from_rules():
         else:
             return jsonify({'error': f'No rules found for API: {api_url}'}), 404
                 
-        # Apply live UUIDs if provided
-        print(f"Live UUIDs: {live_uuids}")
-        if live_uuids and any(live_uuids.get(key, {}).get('uuid') for key in live_uuids):
-            logger.info(f"Applying live UUIDs to payload: {json.dumps(live_uuids, indent=2)}")
-            scaled_payload = live_uuid_processor.apply_live_uuids_to_payload(scaled_payload, live_uuids)
-        logger.info(f"Scaled payload after live UUIDs: {json.dumps(scaled_payload, indent=2)}")
-        logger.info(f"Scaled payload: {json.dumps(scaled_payload, indent=2)}")
         # Update metadata and spec names
         scaled_payload = payload_scaler.update_metadata_uuid(scaled_payload)
         scaled_payload = payload_scaler.update_spec_name(scaled_payload)
@@ -125,7 +112,7 @@ def generate_payload_from_rules():
         scaled_payload = payload_scaler.add_name_suffix_to_entities(scaled_payload, entity_counts)
         
         # Regenerate all UUIDs for uniqueness
-        # scaled_payload = payload_scaler.regenerate_all_entity_uuids(scaled_payload)
+        scaled_payload = payload_scaler.regenerate_all_entity_uuids(scaled_payload)
         
         # Save response to history
         storage_manager.save_response_history(api_url, scaled_payload, entity_counts)
@@ -263,7 +250,7 @@ def analyze_for_rules():
         )
         
         return jsonify(response_data)
-    
+        
     except Exception as e:
         logger.error(f"Error analyzing payload: {str(e)}")
         error_response = {'error': f'Error analyzing payload: {str(e)}'}
@@ -323,7 +310,7 @@ def save_rules_for_api():
         )
         
         return jsonify(response_data)
-    
+        
     except Exception as e:
         logger.error(f"Error saving rules: {str(e)}")
         error_response = {'error': f'Error saving rules: {str(e)}'}
@@ -366,16 +353,16 @@ def preview_with_rules():
         # Apply blueprint-specific fixes if needed
         if api_url == 'blueprint':
             scaled_payload = blueprint_generator.fix_blueprint_deployment_references(scaled_payload)
-    
+        
         response_data = {
-        'success': True,
+            'success': True,
             'scaled_payload': scaled_payload,
             'entity_counts': entity_counts,
             'api_url': api_url
         }
         
         return jsonify(response_data)
-
+        
     except Exception as e:
         logger.error(f"Error previewing with rules: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -402,7 +389,7 @@ def get_history_version_api(api_url, version_index):
             return jsonify({
                 'entity_name': api_url,
                 'version_index': version_index,
-                    'history_entry': history_entry
+                'history_entry': history_entry
             })
         else:
             return jsonify({'error': f'Version {version_index} not found for {api_url}'}), 404
@@ -442,11 +429,11 @@ def analyze_payload():
         
         # Find entities in the payload
         entities = payload_scaler.find_entities_in_payload(payload, api_type=api_type)
-    
+        
         return jsonify({
-                'entities': entities,
-                'api_type': api_type
-            })
+            'entities': entities,
+            'api_type': api_type
+        })
         
     except Exception as e:
         logger.error(f"Error analyzing payload: {str(e)}")
@@ -474,13 +461,13 @@ def get_entities_for_api(api_url):
                 'current_count': info['current_count'],
                 'sample_item': info['sample_item']
             })
-    
+        
         return jsonify({
             'success': True,
             'api_url': api_url,
-                'entities': entities_list
+            'entities': entities_list
         })
-
+        
     except Exception as e:
         logger.error(f"Error getting entities for {api_url}: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -491,8 +478,8 @@ def get_api_types():
     try:
         return jsonify({
             'success': True,
-                'api_types': storage_manager.api_types
-    })
+            'api_types': storage_manager.api_types
+        })
     except Exception as e:
         logger.error(f"Error getting API types: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -508,9 +495,9 @@ def get_default_rules(api_type):
         return jsonify({
             'success': True,
             'api_type': api_type,
-                'default_rules': default_rules
-            })
-    
+            'default_rules': default_rules
+        })
+        
     except Exception as e:
         logger.error(f"Error getting default rules for {api_type}: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -868,92 +855,61 @@ def get_projects():
 
 @app.route('/api/live-uuid/account-details', methods=['POST'])
 def get_account_details():
-    """
-    Fetch account details for given account UUIDs using GET API calls.
-    Returns account details including pc_uuid which should be used as the actual account UUID.
-    """
+    """Get account details from live PC."""
     try:
         data = request.get_json()
-        pc_url = data.get('pc_url', '').strip()
+        pc_url = data.get('pc_url', '')
         username = data.get('username', 'admin')
         password = data.get('password', 'Nutanix.123')
-        account_uuids = data.get('account_uuids', [])
         
-        if not pc_url or not account_uuids:
+        logger.info(f"Fetching account details from PC: {pc_url}")
+        
+        if not pc_url:
+            return jsonify({'error': 'PC URL is required'}), 400
+        
+        # Build API URL for accounts
+        api_url = build_api_url(pc_url, 'ncm', 'api/nutanix/v3/nutanix/v1/groups/list')
+        
+        payload = {
+            "entity_type": "account_info",
+            "query_name": "test",
+            "group_member_attributes": [
+                {"attribute": "uuid"},
+                {"attribute": "name"},
+                {"attribute": "type"}
+            ]
+        }
+        
+        # Create authenticated session
+        session = requests.Session()
+        session.auth = HTTPBasicAuth(username, password)
+        session.headers = {'Content-Type': 'application/json'}
+        session.verify = False
+        
+        response = session.post(api_url, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            accounts_data = response.json()
+            accounts = []
+            for group in accounts_data.get('group_results', []):
+                for entity in group.get('entity_results', []):
+                    account = {
+                        'uuid': entity.get('data', [{}])[0].get('values', [{}])[0].get('values', [''])[0],
+                        'name': entity.get('data', [{}])[1].get('values', [{}])[0].get('values', [''])[0] if len(entity.get('data', [])) > 1 else '',
+                        'type': entity.get('data', [{}])[2].get('values', [{}])[0].get('values', [''])[0] if len(entity.get('data', [])) > 2 else ''
+                    }
+                    accounts.append(account)
+            
             return jsonify({
-                'success': False,
-                'error': 'PC URL and account UUIDs are required'
+                'success': True,
+                'accounts': accounts
             })
-        
-        logger.info(f"Fetching details for {len(account_uuids)} accounts from PC: {pc_url}")
-        
-        accounts = []
-        for account_uuid in account_uuids:
-            try:
-                # Build the account details API URL
-                account_api_url = build_api_url(pc_url, 'services', f'/api/nutanix/v3/accounts/{account_uuid}')
-                logger.info(f"Fetching account details from: {account_api_url}")
-                
-                response = requests.get(
-                    account_api_url,
-                    auth=HTTPBasicAuth(username, password),
-                    headers={'Content-Type': 'application/json'},
-                    verify=False,
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    account_data = response.json()
-                    
-                    # Extract account details
-                    account_name = account_data.get('spec', {}).get('name', f'Account-{account_uuid[:8]}')
-                    pc_uuid_list = account_data.get('spec', {}).get('resources', {}).get('data', {}).get('cluster_account_reference_list', [])
-                    try:
-                        pc_uuid = pc_uuid_list[0]
-                    except Exception as e:
-                        logger.error(f"Error fetching PC UUID for account {account_uuid}: {str(e)}")
-                        return jsonify({
-                            'success': False,
-                            'error': str(e)
-                        })
-                    accounts.append({
-                        'uuid': account_uuid,
-                        'name': account_name,
-                        'pc_uuid': pc_uuid,
-                        'status': 'SUCCESS'
-                    })
-                    
-                    logger.info(f"Successfully fetched account: {account_name} (UUID: {account_uuid}, PC_UUID: {pc_uuid})")
-                    
-                else:
-                    logger.warning(f"Failed to fetch account {account_uuid}: HTTP {response.status_code}")
-                    accounts.append({
-                        'uuid': account_uuid,
-                        'name': f'Account-{account_uuid[:8]}',
-                        'pc_uuid': account_uuid,
-                        'status': f'HTTP_{response.status_code}'
-                    })
-                    
-            except Exception as e:
-                logger.error(f"Error fetching account {account_uuid}: {str(e)}")
-                accounts.append({
-                    'uuid': account_uuid,
-                    'name': f'Account-{account_uuid[:8]}',
-                    'pc_uuid': account_uuid,
-                    'status': 'ERROR'
-                })
-        
-        return jsonify({
-            'success': True,
-            'accounts': accounts
-        })
-        
+        else:
+            return jsonify({'error': f'API call failed with status {response.status_code}'}), response.status_code
+            
     except Exception as e:
-        logger.error(f"Error in get_account_details: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        })
+        logger.error(f"Exception in get_account_details: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/live-uuid/cluster-names', methods=['POST'])
 def get_cluster_names():
@@ -985,7 +941,7 @@ def get_cluster_names():
         session.verify = False
         
         response = session.post(api_url, json=payload, timeout=30)
-                
+        
         if response.status_code == 200:
             clusters_data = response.json()
             clusters = []
@@ -996,14 +952,14 @@ def get_cluster_names():
                     'resources': entity.get('spec', {}).get('resources', {})
                 }
                 clusters.append(cluster)
-        
+            
             return jsonify({
                 'success': True,
-                    'clusters': clusters
+                'clusters': clusters
             })
         else:
             return jsonify({'error': f'API call failed with status {response.status_code}'}), response.status_code
-        
+            
     except Exception as e:
         logger.error(f"Exception in get_cluster_names: {str(e)}")
         return jsonify({'error': str(e)}), 500

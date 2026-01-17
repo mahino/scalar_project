@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-01-16T18:44:22.238872",
+  "api_name": "scalar_api_payload_generate",
+  "endpoint": "/api/payload/generate",
+  "method": "POST",
+  "request_data": {
+    "api_url": "blueprint",
+    "entity_counts": {
+      "spec.resources.app_profile_list": 1,
+      "spec.resources.app_profile_list.deployment_create_list": 1,
+      "spec.resources.service_definition_list": 1,
+      "spec.resources.credential_definition_list": 1,
+      "options.install_runbook.task_definition_list": 1,
+      "options.uninstall_runbook.task_definition_list": 1
+    },
+    "blueprint_type": "multi_vm",
+    "profile_options": {
+      "action_list": 0,
+      "snapshot_config_list": 0,
+      "restore_config_list": 0,
+      "patch_list": 0
+    },
+    "include_guest_customization": false,
+    "live_uuids": {
+      "project": {
+        "uuid": "c11ce261-c52b-4d34-8d49-37fb103acdcc",
+        "name": "Proj1"
+      },
+      "account": {
+        "uuid": "2b77f075-5114-4807-abdd-f3da493038b1",
+        "name": "NTNX_LOCAL_AZ",
+        "original_uuid": "2b77f075-5114-4807-abdd-f3da493038b1"
+      },
+      "cluster": {
+        "uuid": "000647b3-0885-5bf5-0000-00000001c47d",
+        "name": "iris1"
+      },
+      "environment": {
+        "uuid": "",
+        "name": ""
+      },
+      "network": {
+        "uuid": "",
+        "name": ""
+      },
+      "subnet": {
+        "uuid": "6a048e7d-912b-4174-8dec-71423e6321f9",
+        "name": "vlan.114"
+      },
+      "image": {
+        "uuid": "77f999c2-df47-49f1-879b-9e8c4974ed04",
+        "name": "Centos7HadoopMaster"
+      }
+    }
+  },
+  "response_data": {
+    "status": "success",
+    "payload_size": 7209
+  },
+  "status_code": 200,
+  "error": null
+}

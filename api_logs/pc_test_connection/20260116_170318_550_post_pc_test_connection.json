@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-01-16T17:03:18.550257",
+  "api_name": "pc_test_connection",
+  "endpoint": "https://10.36.198.255:9440/api/nutanix/v3/projects/list",
+  "method": "POST",
+  "request_data": {
+    "pc_url": "https://10.36.198.255:9440/",
+    "username": "admin",
+    "test_payload": {
+      "length": 1,
+      "offset": 0,
+      "kind": "project"
+    }
+  },
+  "response_data": {
+    "success": true,
+    "message": "Connection successful",
+    "status_code": 200
+  },
+  "status_code": 200,
+  "error": null
+}
