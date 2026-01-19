@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-01-16T16:47:29.862899",
+  "timestamp": "2026-01-19T08:26:10.515686",
   "api_name": "pc_test_connection",
-  "endpoint": "https://10.36.198.255:9440/api/nutanix/v3/projects/list",
+  "endpoint": "https://10.33.96.20:9440/api/nutanix/v3/projects/list",
   "method": "POST",
   "request_data": {
-    "pc_url": "https://10.36.198.255:9440/",
+    "pc_url": "https://10.33.96.20:9440/",
     "username": "admin",
     "test_payload": {
       "length": 1,

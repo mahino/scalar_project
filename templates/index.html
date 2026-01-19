@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Payload Scaler</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -2312,6 +2313,235 @@
         .searchable-dropdown-list::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+        
+        /* Analyzer Styles */
+        .analyzer-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .progress-step.success {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .progress-step.error {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .progress-step.skipped {
+            border-color: var(--text-secondary);
+            background: rgba(156, 163, 175, 0.1);
+            opacity: 0.7;
+        }
+        
+        .progress-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .progress-step.active .progress-icon {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .progress-step.success .progress-icon {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .progress-step.error .progress-icon {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .progress-step.skipped .progress-icon {
+            background: var(--text-secondary);
+            color: white;
+        }
+        
+        .progress-content {
+            flex: 1;
+        }
+        
+        .progress-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .progress-status {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .progress-indicator {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .analyzer-stats {
+            display: flex;
+            gap: 24px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .flow-diagram {
+            min-height: 400px;
+            background: var(--bg-dark);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flow-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .flow-legend {
+            display: flex;
+            gap: 24px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .cluster-type-toggle {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .cluster-type-toggle .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .cluster-type-toggle .btn-check:checked + .btn {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        /* Flow Diagram Animations */
+        @keyframes flowStepAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes flowArrowPulse {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+        
+        @keyframes flowStepHighlight {
+            0%, 100% {
+                box-shadow: 0 0 0 0 var(--accent-blue);
+            }
+            50% {
+                box-shadow: 0 0 0 8px var(--accent-blue)40;
+            }
+        }
+        
+        .flow-step.highlighted {
+            animation: flowStepHighlight 1s ease-in-out 3;
+            z-index: 10;
+        }
+        
+        .flow-step:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cluster-type-toggle .btn:not(.btn-check:checked + .btn) {
+            background: transparent;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        .cluster-type-toggle .btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
     </style>
 </head>
 <body>
@@ -2346,6 +2576,10 @@
                 </button>
             </div>
             <div class="nav-section" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button class="nav-btn nav-btn-secondary" id="analyzerBtn" onclick="showSection('analyzer')" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.2)); border-color: var(--accent-green); margin-bottom: 8px;">
+                    <i class="bi bi-diagram-2-fill" style="color: var(--accent-green);"></i>
+                    <span>Analyzer</span>
+                </button>
                 <button class="nav-btn nav-btn-secondary" id="perfTesterBtn" onclick="showSection('perfTester')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2)); border-color: var(--accent-orange);">
                     <i class="bi bi-speedometer2" style="color: var(--accent-orange);"></i>
                     <span>Performance Tester</span>
@@ -3664,7 +3898,265 @@ Example structure:
             </div>
         </div>
         
-        <!-- Section 3: Performance Tester -->
+        <!-- Section 3: Log Analyzer -->
+        <div id="analyzerSection" class="section section-hidden">
+            <div class="content-header">
+                <h2>
+                    <i class="bi bi-diagram-2-fill" style="color: var(--accent-green);"></i>
+                    Log Analyzer & Flow Visualization
+                    <span class="badge" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));">Kubernetes</span>
+                </h2>
+                <p>Analyze microservice logs and visualize application flow diagrams from Kubernetes clusters.</p>
+            </div>
+            
+            <!-- Cluster Type Selection -->
+            <div class="card-dark">
+                <h5><i class="bi bi-toggles"></i> Cluster Type</h5>
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-12">
+                        <div class="cluster-type-toggle">
+                            <input type="radio" class="btn-check" name="clusterType" id="clusterTypePC" value="pc" checked>
+                            <label class="btn btn-outline-primary" for="clusterTypePC">
+                                <i class="bi bi-hdd-stack"></i> Prism Central (PC)
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="clusterType" id="clusterTypeNCM" value="ncm">
+                            <label class="btn btn-outline-primary" for="clusterTypeNCM">
+                                <i class="bi bi-cloud"></i> Nutanix Cloud Manager (NCM)
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            <strong>PC Mode:</strong> Uses Docker containers for log collection<br>
+                            <strong>NCM Mode:</strong> Uses Kubernetes pods for log collection
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Configuration -->
+            <div class="card-dark">
+                <h5><i class="bi bi-server"></i> Connection Configuration</h5>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-hdd-network"></i> <span id="ipAddressLabel">PC IP Address</span> <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="analyzerPcIp" 
+                               placeholder="192.168.1.100" 
+                               pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                               title="Enter a valid IP address">
+                        <div class="form-text" id="ipAddressHelp">IP address of the Prism Central cluster</div>
+                    </div>
+                    <div class="col-md-3" id="namespaceSection">
+                        <label class="form-label">
+                            <i class="bi bi-diagram-3"></i> Namespace
+                        </label>
+                        <input type="text" class="form-control" id="analyzerNamespace" 
+                               value="ntnx-ncm-selfservice" 
+                               placeholder="ntnx-ncm-selfservice">
+                        <div class="form-text">Kubernetes namespace</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-success btn-lg w-100" id="analyzerConnectBtn" onclick="connectToCluster()">
+                                <i class="bi bi-play-circle"></i> Connect & Analyze
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm w-100" id="analyzerRefreshBtn" onclick="connectToCluster(true)" style="display: none;">
+                                <i class="bi bi-arrow-clockwise"></i> Fetch Latest Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Existing Logs Notification -->
+            <div class="card-dark" id="analyzerExistingLogsSection" style="display: none;">
+                <h5><i class="bi bi-database-check text-success"></i> Existing Logs Found</h5>
+                <div class="alert alert-success" role="alert" style="border: 2px solid var(--accent-green); background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-clock-history" style="font-size: 2rem; color: var(--accent-green);"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="alert-heading mb-2" style="color: var(--accent-green);">
+                                <i class="bi bi-speedometer2"></i> Save Time - Logs Already Available!
+                            </h6>
+                            <div id="existingLogsInfo" style="color: var(--text-primary);">
+                                Collection time and details will appear here
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                Choose to use existing logs for instant analysis or fetch the latest logs from the cluster.
+                            </small>
+                        </div>
+                        <div class="ms-3 d-flex flex-column gap-2">
+                            <button class="btn btn-success btn-lg" onclick="useExistingLogs()" style="min-width: 140px;">
+                                <i class="bi bi-lightning-charge"></i> Use Existing
+                                <br><small style="font-size: 0.7em;">~5 seconds</small>
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="fetchLatestLogs()" style="min-width: 140px;">
+                                <i class="bi bi-arrow-clockwise"></i> Fetch Latest
+                                <br><small style="font-size: 0.7em;">~5-15 minutes</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="card-dark" id="analyzerProgressSection" style="display: none;">
+                <h5><i class="bi bi-activity"></i> Analysis Progress</h5>
+                <div class="analyzer-progress">
+                    <div class="progress-step" id="sshStep">
+                        <div class="progress-icon">
+                            <i class="bi bi-terminal"></i>
+                        </div>
+                        <div class="progress-content">
+                            <div class="progress-title">SSH Connection</div>
+                            <div class="progress-status">Waiting...</div>
+                        </div>
+                        <div class="progress-indicator">
+                            <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+                            <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                            <i class="bi bi-x-circle-fill text-danger" style="display: none;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-step" id="kubeconfigStep">
+                        <div class="progress-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <div class="progress-content">
+                            <div class="progress-title">Kubeconfig Setup</div>
+                            <div class="progress-status">Waiting...</div>
+                        </div>
+                        <div class="progress-indicator">
+                            <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+                            <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                            <i class="bi bi-x-circle-fill text-danger" style="display: none;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-step" id="podDiscoveryStep">
+                        <div class="progress-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <div class="progress-content">
+                            <div class="progress-title">Pod Discovery</div>
+                            <div class="progress-status">Waiting...</div>
+                        </div>
+                        <div class="progress-indicator">
+                            <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+                            <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                            <i class="bi bi-x-circle-fill text-danger" style="display: none;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-step" id="logCollectionStep">
+                        <div class="progress-icon">
+                            <i class="bi bi-download"></i>
+                        </div>
+                        <div class="progress-content">
+                            <div class="progress-title">Log Collection</div>
+                            <div class="progress-status">Waiting...</div>
+                        </div>
+                        <div class="progress-indicator">
+                            <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+                            <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                            <i class="bi bi-x-circle-fill text-danger" style="display: none;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-step" id="logAnalysisStep">
+                        <div class="progress-icon">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <div class="progress-content">
+                            <div class="progress-title">Log Analysis</div>
+                            <div class="progress-status">Waiting...</div>
+                        </div>
+                        <div class="progress-indicator">
+                            <div class="spinner-border spinner-border-sm" style="display: none;"></div>
+                            <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                            <i class="bi bi-x-circle-fill text-danger" style="display: none;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Application Selector -->
+            <div class="card-dark" id="analyzerAppSelectorSection" style="display: none;">
+                <h5><i class="bi bi-list-ul"></i> Application Selection</h5>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">Select Application UUID</label>
+                        <select class="form-select" id="analyzerAppSelector" onchange="loadApplicationFlow()">
+                            <option value="">Choose an application...</option>
+                        </select>
+                        <div class="form-text">Applications discovered from log analysis</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="analyzer-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalAppsCount">0</div>
+                                <div class="stat-label">Applications</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalServicesCount">0</div>
+                                <div class="stat-label">Services</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flow Visualization -->
+            <div class="card-dark" id="analyzerFlowSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-diagram-3"></i> Service Flow Diagram</h5>
+                    <div class="flow-controls">
+                        <button class="btn btn-sm btn-outline-primary" onclick="resetFlowZoom()">
+                            <i class="bi bi-arrows-fullscreen"></i> Reset Zoom
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="exportFlowDiagram()">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div id="analyzerFlowDiagram" class="flow-diagram">
+                    <!-- Flow diagram will be rendered here -->
+                </div>
+                
+                <!-- Flow Legend -->
+                <div class="flow-legend mt-3">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-blue);"></div>
+                        <span>Service Node</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-green);"></div>
+                        <span>Success</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-orange);"></div>
+                        <span>Warning</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-red);"></div>
+                        <span>Error</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Details Panel -->
+            <div class="card-dark" id="analyzerDetailsSection" style="display: none;">
+                <h5><i class="bi bi-info-circle"></i> Service Interaction Details</h5>
+                <div id="analyzerServiceDetails">
+                    <!-- Service details will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 4: Performance Tester -->
         <div id="perfTesterSection" class="section section-hidden">
             <div class="content-header">
                 <h2>
@@ -4290,6 +4782,8 @@ Example structure:
             document.querySelectorAll('.nav-btn-secondary').forEach(btn => btn.classList.remove('active'));
             if (section === 'createEntities') {
                 document.getElementById('createEntitiesBtn').classList.add('active');
+            } else if (section === 'analyzer') {
+                document.getElementById('analyzerBtn').classList.add('active');
             } else if (section === 'perfTester') {
                 document.getElementById('perfTesterBtn').classList.add('active');
             } else if (section === 'playwright') {
@@ -4309,6 +4803,8 @@ Example structure:
                         loadRunbookEntityList();
                     }
                 }
+            } else if (section === 'analyzer') {
+                initAnalyzer();
             } else if (section === 'perfTester') {
                 initPerfTester();
             }
@@ -9354,6 +9850,862 @@ Example structure:
             
             // Update any related calculations or UI elements
             // This function can be expanded to handle rules service count changes
+        }
+        
+        // ============================================================================
+        // ANALYZER FUNCTIONS
+        // ============================================================================
+        
+        let analyzerState = {
+            isConnected: false,
+            applications: [],
+            selectedApp: null,
+            flowData: null
+        };
+        
+        function initAnalyzer() {
+            console.log('Initializing Analyzer...');
+            resetAnalyzerUI();
+            setupClusterTypeToggle();
+        }
+        
+        function setupClusterTypeToggle() {
+            // Add event listeners for cluster type toggle
+            document.querySelectorAll('input[name="clusterType"]').forEach(radio => {
+                radio.addEventListener('change', updateClusterTypeUI);
+            });
+            
+            // Initialize UI based on default selection
+            updateClusterTypeUI();
+        }
+        
+        function updateClusterTypeUI() {
+            const selectedType = document.querySelector('input[name="clusterType"]:checked').value;
+            const ipLabel = document.getElementById('ipAddressLabel');
+            const ipHelp = document.getElementById('ipAddressHelp');
+            const namespaceSection = document.getElementById('namespaceSection');
+            
+            if (selectedType === 'pc') {
+                ipLabel.textContent = 'PC IP Address';
+                ipHelp.textContent = 'IP address of the Prism Central cluster';
+                namespaceSection.style.display = 'none';
+            } else {
+                ipLabel.textContent = 'NCM IP Address';
+                ipHelp.textContent = 'IP address of the Nutanix Cloud Manager';
+                namespaceSection.style.display = 'block';
+            }
+        }
+        
+        function resetAnalyzerUI() {
+            // Reset all progress steps
+            const steps = ['sshStep', 'kubeconfigStep', 'podDiscoveryStep', 'logCollectionStep', 'logAnalysisStep'];
+            steps.forEach(stepId => {
+                const step = document.getElementById(stepId);
+                step.className = 'progress-step';
+                step.querySelector('.progress-status').textContent = 'Waiting...';
+                step.querySelector('.spinner-border').style.display = 'none';
+                step.querySelector('.bi-check-circle-fill').style.display = 'none';
+                step.querySelector('.bi-x-circle-fill').style.display = 'none';
+            });
+            
+            // Hide sections
+            document.getElementById('analyzerProgressSection').style.display = 'none';
+            document.getElementById('analyzerAppSelectorSection').style.display = 'none';
+            document.getElementById('analyzerFlowSection').style.display = 'none';
+            document.getElementById('analyzerDetailsSection').style.display = 'none';
+            
+            // Reset state
+            analyzerState.isConnected = false;
+            analyzerState.applications = [];
+            analyzerState.selectedApp = null;
+            analyzerState.flowData = null;
+        }
+        
+        function updateProgressStep(stepId, status, message) {
+            const step = document.getElementById(stepId);
+            if (!step) {
+                console.warn(`Progress step element not found: ${stepId}`);
+                return;
+            }
+            
+            const statusEl = step.querySelector('.progress-status');
+            const spinner = step.querySelector('.spinner-border');
+            const successIcon = step.querySelector('.bi-check-circle-fill');
+            const errorIcon = step.querySelector('.bi-x-circle-fill');
+            const progressIcon = step.querySelector('.progress-icon');
+            
+            if (!statusEl) {
+                console.warn(`Progress status element not found in step: ${stepId}`);
+                return;
+            }
+            
+            // Check if we need to add a skipped icon
+            let skipIcon = step.querySelector('.bi-dash-circle-fill');
+            if (!skipIcon && progressIcon) {
+                // Create skip icon if it doesn't exist
+                skipIcon = document.createElement('i');
+                skipIcon.className = 'bi bi-dash-circle-fill';
+                skipIcon.style.display = 'none';
+                progressIcon.appendChild(skipIcon);
+            }
+            
+            // Reset all indicators (with null checks)
+            if (spinner) spinner.style.display = 'none';
+            if (successIcon) successIcon.style.display = 'none';
+            if (errorIcon) errorIcon.style.display = 'none';
+            if (skipIcon) skipIcon.style.display = 'none';
+            
+            // Update status
+            statusEl.textContent = message;
+            step.className = `progress-step ${status}`;
+            
+            if (status === 'active' && spinner) {
+                spinner.style.display = 'block';
+            } else if (status === 'success' && successIcon) {
+                successIcon.style.display = 'block';
+            } else if (status === 'error' && errorIcon) {
+                errorIcon.style.display = 'block';
+            } else if (status === 'skipped' && skipIcon) {
+                skipIcon.style.display = 'block';
+            }
+        }
+        
+        async function connectToCluster(forceRefresh = false) {
+            const pcIp = document.getElementById('analyzerPcIp').value.trim();
+            const namespace = document.getElementById('analyzerNamespace').value.trim() || 'ntnx-ncm-selfservice';
+            const clusterType = document.querySelector('input[name="clusterType"]:checked').value;
+            
+            if (!pcIp) {
+                showToast('Please enter an IP address', 'error');
+                return;
+            }
+            
+            // Validate IP format
+            const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+            if (!ipRegex.test(pcIp)) {
+                showToast('Please enter a valid IP address', 'error');
+                return;
+            }
+            
+            // Reset state
+            analyzerState.isConnected = false;
+            analyzerState.applications = [];
+            analyzerState.selectedApp = null;
+            
+            // Hide existing logs section initially
+            document.getElementById('analyzerExistingLogsSection').style.display = 'none';
+            
+            // If not forcing refresh, check for existing logs first
+            if (!forceRefresh) {
+                try {
+                    console.log('Checking for existing logs...');
+                    
+                    // Show a temporary checking message
+                    showToast('Checking for existing logs...', 'info', 2000);
+                    
+                    const existingLogsCheck = await analyzerApiCall('/api/analyzer/check-existing-logs', { 
+                        pc_ip: pcIp, 
+                        cluster_type: clusterType 
+                    });
+                    
+                    console.log('Existing logs check result:', existingLogsCheck);
+                    
+                    if (existingLogsCheck && existingLogsCheck.exists) {
+                        // Show existing logs notification
+                        const collectionTime = existingLogsCheck.collection_time ? 
+                            new Date(existingLogsCheck.collection_time).toLocaleString() : 'Unknown';
+                        
+                        document.getElementById('existingLogsInfo').innerHTML = `
+                            <strong>Collection Time:</strong> ${collectionTime}<br>
+                            <strong>Services:</strong> ${existingLogsCheck.services_count || 0} | <strong>Files:</strong> ${existingLogsCheck.files_count || 0}
+                        `;
+                        document.getElementById('analyzerExistingLogsSection').style.display = 'block';
+                        
+                        // Hide progress section initially
+                        document.getElementById('analyzerProgressSection').style.display = 'none';
+                        
+                        // Show success message
+                        showToast('Found existing logs! Choose an option below.', 'success');
+                        
+                        console.log('Showing existing logs dialog');
+                        return; // Stop here and let user choose
+                    } else {
+                        console.log('No existing logs found, proceeding with fresh collection');
+                        showToast('No existing logs found, collecting fresh logs...', 'info');
+                    }
+                } catch (error) {
+                    console.log('Error checking existing logs:', error);
+                    console.log('Proceeding with fresh collection');
+                    showToast('Error checking existing logs, collecting fresh logs...', 'warning');
+                }
+            }
+            
+            // Show progress section
+            document.getElementById('analyzerProgressSection').style.display = 'block';
+            document.getElementById('analyzerConnectBtn').disabled = true;
+            
+            try {
+                // Step 1: SSH Connection
+                updateProgressStep('sshStep', 'active', 'Establishing SSH connection...');
+                await analyzerApiCall('/api/analyzer/ssh-connect', { pc_ip: pcIp, cluster_type: clusterType });
+                updateProgressStep('sshStep', 'success', 'SSH connection established');
+                
+                // Step 2: Configuration Setup (Kubeconfig for NCM, Docker validation for PC)
+                const configLabel = clusterType === 'pc' ? 'Docker setup' : 'Kubeconfig setup';
+                updateProgressStep('kubeconfigStep', 'active', `Setting up ${configLabel}...`);
+                await analyzerApiCall('/api/analyzer/kubeconfig-setup', { pc_ip: pcIp, cluster_type: clusterType });
+                updateProgressStep('kubeconfigStep', 'success', `${configLabel} completed`);
+                
+                // Step 3: Service Discovery (Containers for PC, Pods for NCM)
+                const discoveryLabel = clusterType === 'pc' ? 'containers' : 'pods';
+                updateProgressStep('podDiscoveryStep', 'active', `Discovering ${discoveryLabel}...`);
+                const serviceData = await analyzerApiCall('/api/analyzer/discover-pods', { 
+                    pc_ip: pcIp, 
+                    cluster_type: clusterType,
+                    namespace: clusterType === 'ncm' ? namespace : undefined 
+                });
+                updateProgressStep('podDiscoveryStep', 'success', `Found ${serviceData.pod_count} ${discoveryLabel}`);
+                
+                // Step 4: Log Collection
+                updateProgressStep('logCollectionStep', 'active', 'Collecting logs...');
+                const logData = await analyzerApiCall('/api/analyzer/collect-logs', { 
+                    pc_ip: pcIp,
+                    cluster_type: clusterType,
+                    namespace: clusterType === 'ncm' ? namespace : undefined,
+                    pods: serviceData.pods,
+                    force_refresh: forceRefresh
+                });
+                
+                if (logData.using_existing) {
+                    updateProgressStep('logCollectionStep', 'success', `Using existing logs (${logData.files_count} files)`);
+                } else {
+                    updateProgressStep('logCollectionStep', 'success', `Collected ${logData.log_count || logData.files_count} log files`);
+                }
+                
+                // Step 5: Log Analysis
+                updateProgressStep('logAnalysisStep', 'active', 'Analyzing logs...');
+                const analysisData = await analyzerApiCall('/api/analyzer/analyze-logs', { pc_ip: pcIp, cluster_type: clusterType });
+                updateProgressStep('logAnalysisStep', 'success', `Found ${analysisData.application_count} applications`);
+                
+                // Update state and show application selector
+                analyzerState.isConnected = true;
+                analyzerState.applications = analysisData.applications;
+                populateApplicationSelector(analysisData.applications);
+                
+                // Show application selector section
+                document.getElementById('analyzerAppSelectorSection').style.display = 'block';
+                
+                showToast('Analysis completed successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Analyzer error:', error);
+                
+                // Find which step failed and mark it as error
+                const steps = ['sshStep', 'kubeconfigStep', 'podDiscoveryStep', 'logCollectionStep', 'logAnalysisStep'];
+                for (const stepId of steps) {
+                    const step = document.getElementById(stepId);
+                    if (step.classList.contains('active')) {
+                        updateProgressStep(stepId, 'error', error.message || 'Operation failed');
+                        break;
+                    }
+                }
+                
+                showToast(`Analysis failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('analyzerConnectBtn').disabled = false;
+            }
+        }
+        
+        async function useExistingLogs() {
+            const pcIpElement = document.getElementById('analyzerPcIp');
+            const clusterTypeElement = document.querySelector('input[name="clusterType"]:checked');
+            
+            if (!pcIpElement || !clusterTypeElement) {
+                console.error('Required form elements not found');
+                showToast('Form elements not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            const pcIp = pcIpElement.value.trim();
+            const clusterType = clusterTypeElement.value;
+            
+            // Hide existing logs section
+            const existingLogsSection = document.getElementById('analyzerExistingLogsSection');
+            if (existingLogsSection) {
+                existingLogsSection.style.display = 'none';
+            }
+            
+            try {
+                // Show progress section
+                const progressSection = document.getElementById('analyzerProgressSection');
+                const connectBtn = document.getElementById('analyzerConnectBtn');
+                
+                if (progressSection) {
+                    progressSection.style.display = 'block';
+                }
+                if (connectBtn) {
+                    connectBtn.disabled = true;
+                }
+                
+                // Mark initial steps as skipped since we're using existing logs
+                updateProgressStep('sshStep', 'skipped', 'SSH connection skipped (using existing logs)');
+                updateProgressStep('kubeconfigStep', 'skipped', 'Setup skipped (using existing logs)');
+                updateProgressStep('podDiscoveryStep', 'skipped', 'Discovery skipped (using existing logs)');
+                updateProgressStep('logCollectionStep', 'skipped', 'Collection skipped (using existing logs)');
+                
+                // Skip to analysis step
+                updateProgressStep('logAnalysisStep', 'active', 'Analyzing existing logs...');
+                const analysisData = await analyzerApiCall('/api/analyzer/analyze-logs', { pc_ip: pcIp, cluster_type: clusterType });
+                updateProgressStep('logAnalysisStep', 'success', `Found ${analysisData.application_count} applications`);
+                
+                // Update state and show application selector
+                analyzerState.isConnected = true;
+                analyzerState.applications = analysisData.applications;
+                populateApplicationSelector(analysisData.applications);
+                
+                // Show application selector section
+                const appSelectorSection = document.getElementById('analyzerAppSelectorSection');
+                if (appSelectorSection) {
+                    appSelectorSection.style.display = 'block';
+                }
+                
+                showToast('Analysis completed using existing logs!', 'success');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                updateProgressStep('logAnalysisStep', 'error', error.message || 'Analysis failed');
+                showToast(`Analysis failed: ${error.message}`, 'error');
+            } finally {
+                const connectBtn = document.getElementById('analyzerConnectBtn');
+                if (connectBtn) {
+                    connectBtn.disabled = false;
+                }
+            }
+        }
+        
+        async function fetchLatestLogs() {
+            // Hide existing logs section
+            document.getElementById('analyzerExistingLogsSection').style.display = 'none';
+            
+            // Reset all progress steps to waiting state
+            resetProgressSteps();
+            
+            // Force refresh by calling connectToCluster with forceRefresh = true
+            await connectToCluster(true);
+        }
+        
+        function resetProgressSteps() {
+            updateProgressStep('sshStep', 'waiting', 'Waiting...');
+            updateProgressStep('kubeconfigStep', 'waiting', 'Waiting...');
+            updateProgressStep('podDiscoveryStep', 'waiting', 'Waiting...');
+            updateProgressStep('logCollectionStep', 'waiting', 'Waiting...');
+            updateProgressStep('logAnalysisStep', 'waiting', 'Waiting...');
+        }
+        
+        async function analyzerApiCall(endpoint, data) {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+        
+        function populateApplicationSelector(applications) {
+            const selector = document.getElementById('analyzerAppSelector');
+            selector.innerHTML = '<option value="">Choose an application...</option>';
+            
+            applications.forEach(app => {
+                const option = document.createElement('option');
+                option.value = app.uuid;
+                option.textContent = `${app.uuid} (${app.service_count} services)`;
+                selector.appendChild(option);
+            });
+            
+            // Update stats
+            document.getElementById('totalAppsCount').textContent = applications.length;
+            const totalServices = applications.reduce((sum, app) => sum + app.service_count, 0);
+            document.getElementById('totalServicesCount').textContent = totalServices;
+        }
+        
+        async function loadApplicationFlow() {
+            const selectedUuid = document.getElementById('analyzerAppSelector').value;
+            
+            if (!selectedUuid) {
+                document.getElementById('analyzerFlowSection').style.display = 'none';
+                document.getElementById('analyzerDetailsSection').style.display = 'none';
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                // Get flow data for selected application
+                const flowData = await analyzerApiCall('/api/analyzer/get-flow', { 
+                    pc_ip: document.getElementById('analyzerPcIp').value.trim(),
+                    cluster_type: document.querySelector('input[name="clusterType"]:checked').value,
+                    application_uuid: selectedUuid 
+                });
+                
+                analyzerState.selectedApp = selectedUuid;
+                analyzerState.flowData = flowData;
+                
+                // Render flow diagram
+                renderFlowDiagram(flowData);
+                
+                // Show flow section
+                document.getElementById('analyzerFlowSection').style.display = 'block';
+                
+                // Start live visualization after a short delay
+                setTimeout(() => {
+                    startLiveFlowVisualization();
+                }, 2000);
+                
+                showToast('Flow diagram loaded successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Flow loading error:', error);
+                showToast(`Failed to load flow: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function renderFlowDiagram(flowData) {
+            const diagramContainer = document.getElementById('analyzerFlowDiagram');
+            
+            // Create comprehensive timeline-based flow diagram
+            let diagramHtml = `
+                <div style="padding: 20px; color: var(--text-primary); font-family: 'Courier New', monospace;">
+                    <h5 style="color: var(--accent-blue); margin-bottom: 20px;">
+                        📊 Application Flow Analysis: ${flowData.application_uuid}
+                    </h5>
+                    
+                    <!-- Summary Section -->
+                    <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                        <h6 style="color: var(--accent-green); margin-bottom: 10px;">📈 Analysis Summary</h6>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div><strong>Total Events:</strong> ${flowData.summary?.total_events || 0}</div>
+                            <div><strong>Services Involved:</strong> ${flowData.summary?.services_involved || 0}</div>
+                            <div><strong>Total Duration:</strong> ${(flowData.summary?.total_duration_ms || 0).toFixed(2)}ms</div>
+                            <div><strong>Service Count:</strong> ${flowData.service_count || 0}</div>
+                        </div>
+                    </div>
+            `;
+            
+            // Timeline Phases Section
+            if (flowData.timeline_phases && Array.isArray(flowData.timeline_phases) && flowData.timeline_phases.length > 0) {
+                diagramHtml += `
+                    <div style="margin-bottom: 30px;">
+                        <h6 style="color: var(--accent-orange); margin-bottom: 15px;">⏱️ Timeline and Service Interactions</h6>
+                `;
+                
+                flowData.timeline_phases.forEach((phase, phaseIndex) => {
+                    const phaseColor = phaseIndex === 0 ? 'var(--accent-purple)' : 
+                                     phaseIndex === 1 ? 'var(--accent-blue)' : 
+                                     phaseIndex === 2 ? 'var(--accent-green)' : 'var(--accent-red)';
+                    
+                    diagramHtml += `
+                        <div style="margin-bottom: 25px; border-left: 4px solid ${phaseColor}; padding-left: 20px;">
+                            <h6 style="color: ${phaseColor}; margin-bottom: 10px;">
+                                ${phase.name === 'Execution Flow Sequence' ? '🔄' : `Phase ${phaseIndex}`}: ${phase.name}
+                            </h6>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px;">
+                                ${phase.start_time ? new Date(phase.start_time).toLocaleString() : 'Unknown'} - 
+                                Duration: ~${(phase.duration_ms || 0).toFixed(0)}ms
+                            </div>
+                            
+                            <div style="margin-left: 20px;">
+                    `;
+                    
+                    // Special rendering for execution flow sequence
+                    if (phase.name === 'Execution Flow Sequence' && phase.execution_flow && Array.isArray(phase.execution_flow)) {
+                        diagramHtml += `
+                            <div style="background: linear-gradient(135deg, ${phaseColor}20, ${phaseColor}10); border: 2px solid ${phaseColor}; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                                <div style="font-weight: bold; color: ${phaseColor}; margin-bottom: 15px; font-size: 16px; text-align: center;">
+                                    🔗 Service Execution Flow
+                                </div>
+                                <div style="font-family: monospace; font-size: 16px; color: var(--text-primary); margin-bottom: 15px; text-align: center; font-weight: bold;">
+                                    ${phase.execution_flow.map(step => step.service_instance).join(' → ')}
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-top: 15px;">
+                        `;
+                        
+                        phase.execution_flow.forEach((step, stepIndex) => {
+                            const stepColor = stepIndex === 0 ? 'var(--accent-green)' : 
+                                            stepIndex === phase.execution_flow.length - 1 ? 'var(--accent-red)' : 'var(--accent-blue)';
+                            
+                            diagramHtml += `
+                                <div class="flow-step-animated" data-step="${stepIndex}" data-service-name="${step.service_instance}" data-duration="${step.duration_from_start || 0}" style="
+                                    background: ${stepColor}30; 
+                                    border: 2px solid ${stepColor}; 
+                                    border-radius: 8px; 
+                                    padding: 12px 16px; 
+                                    text-align: center;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    animation: flowStepAppear 0.5s ease ${stepIndex * 0.15}s both;
+                                    min-width: 90px;
+                                    box-shadow: 0 2px 8px ${stepColor}30;
+                                " onclick="highlightFlowStep('${step.service_instance}', ${step.duration_from_start || 0})" 
+                                   onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 16px ${stepColor}50'" 
+                                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px ${stepColor}30'">
+                                    <div style="font-weight: bold; color: ${stepColor}; font-size: 13px; margin-bottom: 4px;">
+                                        ${step.service_instance}
+                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 10px; margin-bottom: 2px;">
+                                        ${step.timestamp ? new Date(step.timestamp).toLocaleTimeString() : ''}
+                                    </div>
+                                    <div style="color: var(--text-tertiary); font-size: 9px; font-weight: bold;">
+                                        +${(step.duration_from_start || 0).toFixed(0)}ms
+                                    </div>
+                                </div>
+                            `;
+                            
+                            if (stepIndex < phase.execution_flow.length - 1) {
+                                diagramHtml += `<div class="flow-arrow" style="
+                                    color: ${phaseColor}; 
+                                    font-size: 20px;
+                                    font-weight: bold;
+                                    animation: flowArrowPulse 2s ease-in-out infinite;
+                                ">→</div>`;
+                            }
+                        });
+                        
+                        diagramHtml += `
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Render services in this phase
+                    if (phase.services && Array.isArray(phase.services) && phase.services.length > 0) {
+                        phase.services.forEach(service => {
+                            diagramHtml += `
+                                <div style="margin-bottom: 15px; background: var(--bg-tertiary); padding: 12px; border-radius: 6px;">
+                                    <div style="font-weight: bold; color: ${phaseColor}; margin-bottom: 8px;">
+                                        🔧 ${service.name} (${getServiceDescription(service.name)})
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
+                                        Start: ${service.start_time ? new Date(service.start_time).toLocaleTimeString() : 'Unknown'} | 
+                                        End: ${service.end_time ? new Date(service.end_time).toLocaleTimeString() : 'Unknown'} | 
+                                        Duration: ~${(service.duration_ms || 0).toFixed(0)}ms
+                                    </div>
+                                    <div style="margin-left: 15px;">
+                                        <div style="color: var(--text-secondary); font-size: 11px; margin-bottom: 5px;">Actions:</div>
+                            `;
+                            
+                            // Show actions for this service
+                            if (service.actions && Array.isArray(service.actions) && service.actions.length > 0) {
+                                service.actions.slice(0, 5).forEach(action => {
+                                    diagramHtml += `
+                                        <div style="margin-left: 10px; font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px;">
+                                            ├── ${action.name || action.type}
+                                        </div>
+                                    `;
+                                });
+                                
+                                if (service.actions.length > 5) {
+                                    diagramHtml += `
+                                        <div style="margin-left: 10px; font-size: 10px; color: var(--text-tertiary);">
+                                            └── ... and ${service.actions.length - 5} more actions
+                                        </div>
+                                    `;
+                                }
+                            }
+                            
+                            diagramHtml += `
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    diagramHtml += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                diagramHtml += `</div>`;
+            }
+            
+            // Service-by-Service Execution Flow
+            if (flowData.execution_flow_sequence && Array.isArray(flowData.execution_flow_sequence) && flowData.execution_flow_sequence.length > 0) {
+                diagramHtml += `
+                    <div style="margin-bottom: 30px;">
+                        <h6 style="color: var(--accent-blue); margin-bottom: 15px;">🔄 Service Execution Flow</h6>
+                        <div style="background: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+                            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px;">
+                `;
+                
+                flowData.execution_flow_sequence.forEach((step, index) => {
+                    const stepColor = index === 0 ? 'var(--accent-green)' : 
+                                    index === flowData.execution_flow_sequence.length - 1 ? 'var(--accent-red)' : 'var(--accent-blue)';
+                    
+                    diagramHtml += `
+                        <div class="flow-step-animated" data-service-name="${step.service_instance}" data-duration="${step.duration_from_start || 0}" style="
+                            background: ${stepColor}20; 
+                            border: 2px solid ${stepColor}; 
+                            border-radius: 8px; 
+                            padding: 12px 16px; 
+                            text-align: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            animation: flowStepAppear 0.5s ease ${index * 0.2}s both;
+                            min-width: 100px;
+                        " onclick="highlightFlowStep('${step.service_instance}', ${step.duration_from_start || 0})" 
+                           onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px ${stepColor}40'" 
+                           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+                            <div style="font-weight: bold; color: ${stepColor}; font-size: 13px; margin-bottom: 4px;">
+                                ${step.service_instance}
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 10px;">
+                                ${step.timestamp ? new Date(step.timestamp).toLocaleTimeString() : ''}
+                            </div>
+                            <div style="color: var(--text-tertiary); font-size: 9px; margin-top: 2px;">
+                                +${(step.duration_from_start || 0).toFixed(0)}ms
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add arrow between steps
+                    if (index < flowData.execution_flow_sequence.length - 1) {
+                        diagramHtml += `
+                            <div class="flow-arrow" style="
+                                color: var(--accent-blue); 
+                                font-size: 18px; 
+                                animation: flowArrowPulse 2s ease-in-out infinite;
+                                margin: 0 5px;
+                            ">→</div>
+                        `;
+                    }
+                });
+                
+                diagramHtml += `
+                            </div>
+                            
+                            <!-- Flow Summary -->
+                            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); text-align: center;">
+                                <div style="color: var(--text-secondary); font-size: 12px;">
+                                    <strong>Total Steps:</strong> ${flowData.execution_flow_sequence.length} | 
+                                    <strong>Duration:</strong> ${(flowData.execution_flow_sequence[flowData.execution_flow_sequence.length - 1]?.duration_from_start || 0).toFixed(0)}ms |
+                                    <strong>Flow:</strong> ${flowData.execution_flow_sequence.map(s => s.service_instance).join(' → ')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Key Identifiers Section
+            if (flowData.key_identifiers && typeof flowData.key_identifiers === 'object' && Object.keys(flowData.key_identifiers).length > 0) {
+                diagramHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="color: var(--accent-yellow); margin-bottom: 10px;">🔑 Key Identifiers</h6>
+                        <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+                `;
+                
+                Object.entries(flowData.key_identifiers).forEach(([key, values]) => {
+                    if (values && values.length > 0) {
+                        diagramHtml += `
+                            <div style="margin-bottom: 8px;">
+                                <strong style="color: var(--accent-yellow);">${key.replace('_', ' ').toUpperCase()}:</strong>
+                                <span style="color: var(--text-secondary); font-family: monospace; font-size: 11px;">
+                                    ${values.slice(0, 2).join(', ')}${values.length > 2 ? '...' : ''}
+                                </span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                diagramHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // ASCII Flow Diagram Section
+            if (flowData.ascii_flow_diagram) {
+                diagramHtml += `
+                    <div style="margin-bottom: 30px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 style="color: var(--accent-purple); margin-bottom: 0;">🎯 ASCII Flow Diagram</h6>
+                            <button class="btn btn-sm btn-outline-primary" onclick="copyAsciiDiagram()" title="Copy ASCII diagram to clipboard">
+                                <i class="bi bi-clipboard"></i> Copy ASCII
+                            </button>
+                        </div>
+                        <div id="asciiFlowDiagram" style="
+                            background: var(--bg-tertiary); 
+                            border: 1px solid var(--border-color); 
+                            border-radius: 8px; 
+                            padding: 20px; 
+                            font-family: 'Courier New', 'Monaco', monospace; 
+                            font-size: 12px; 
+                            line-height: 1.4; 
+                            white-space: pre-wrap; 
+                            overflow-x: auto;
+                            color: var(--text-primary);
+                            max-height: 600px;
+                            overflow-y: auto;
+                        ">${flowData.ascii_flow_diagram}</div>
+                    </div>
+                `;
+            }
+            
+            diagramHtml += `
+                </div>
+            `;
+            
+            diagramContainer.innerHTML = diagramHtml;
+        }
+        
+        function getServiceDescription(serviceName) {
+            const descriptions = {
+                'STYX': 'NuCalm Service',
+                'JOVE': 'Execution Engine', 
+                'IRIS': 'Runlog Manager',
+                'HELIOS': 'Query Service',
+                'GOZAFFI': 'Entity Service',
+                'NARAD': 'Policy Engine',
+                'HERCULES': 'Task Manager',
+                'EPSILON': 'Container Host'
+            };
+            return descriptions[serviceName] || 'Unknown Service';
+        }
+        
+        function copyAsciiDiagram() {
+            const asciiElement = document.getElementById('asciiFlowDiagram');
+            if (asciiElement) {
+                const text = asciiElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('ASCII diagram copied to clipboard!', 'success');
+                }).catch(err => {
+                    console.error('Failed to copy ASCII diagram:', err);
+                    showToast('Failed to copy ASCII diagram', 'error');
+                });
+            }
+        }
+        
+        function highlightFlowStep(stepIndex) {
+            // Remove previous highlights
+            document.querySelectorAll('.flow-step').forEach(step => {
+                step.classList.remove('highlighted');
+            });
+            
+            // Add highlight to clicked step
+            const clickedStep = document.querySelector(`[data-step="${stepIndex}"]`);
+            if (clickedStep) {
+                clickedStep.classList.add('highlighted');
+                
+                // Show step details in a toast
+                const serviceName = clickedStep.querySelector('div').textContent;
+                const timing = clickedStep.querySelector('div:last-child').textContent;
+                showToast(`Step ${stepIndex + 1}: ${serviceName} ${timing}`, 'info', 3000);
+            }
+        }
+        
+        function startLiveFlowVisualization() {
+            // Simulate live updates to the flow diagram
+            const flowSteps = document.querySelectorAll('.flow-step');
+            let currentStep = 0;
+            
+            const animateStep = () => {
+                if (currentStep < flowSteps.length) {
+                    // Remove previous highlights
+                    flowSteps.forEach(step => step.classList.remove('highlighted'));
+                    
+                    // Highlight current step
+                    flowSteps[currentStep].classList.add('highlighted');
+                    
+                    currentStep++;
+                    setTimeout(animateStep, 1000); // Move to next step after 1 second
+                } else {
+                    // Reset and start over
+                    setTimeout(() => {
+                        currentStep = 0;
+                        animateStep();
+                    }, 3000); // Wait 3 seconds before restarting
+                }
+            };
+            
+            // Start the animation
+            setTimeout(animateStep, 1000);
+        }
+        
+        function showServiceDetails(serviceName) {
+            if (!analyzerState.flowData) return;
+            
+            const service = analyzerState.flowData.services.find(s => s.name === serviceName);
+            if (!service) return;
+            
+            const detailsContainer = document.getElementById('analyzerServiceDetails');
+            detailsContainer.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-gear"></i> ${service.name}</h6>
+                        <table class="table table-sm table-dark">
+                            <tr><td>Operation:</td><td>${service.operation}</td></tr>
+                            <tr><td>Status:</td><td><span class="badge bg-${service.status === 'success' ? 'success' : service.status === 'error' ? 'danger' : 'warning'}">${service.status}</span></td></tr>
+                            <tr><td>Duration:</td><td>${service.duration}ms</td></tr>
+                            <tr><td>Start Time:</td><td>${service.start_time}</td></tr>
+                            <tr><td>End Time:</td><td>${service.end_time}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-list-ul"></i> Interactions</h6>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${service.interactions ? service.interactions.map(interaction => `
+                                <div class="mb-2 p-2" style="background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <small><strong>${interaction.type}:</strong> ${interaction.description}</small>
+                                    <br><small class="text-muted">${interaction.timestamp}</small>
+                                </div>
+                            `).join('') : '<small class="text-muted">No detailed interactions available</small>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('analyzerDetailsSection').style.display = 'block';
+        }
+        
+        function resetFlowZoom() {
+            // Placeholder for zoom reset functionality
+            showToast('Zoom reset (placeholder)', 'info');
+        }
+        
+        function exportFlowDiagram() {
+            if (!analyzerState.flowData) {
+                showToast('No flow data to export', 'warning');
+                return;
+            }
+            
+            // Create a simple JSON export
+            const exportData = {
+                application_uuid: analyzerState.selectedApp,
+                flow_data: analyzerState.flowData,
+                exported_at: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flow_diagram_${analyzerState.selectedApp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Flow diagram exported successfully!', 'success');
         }
     </script>
 </body>

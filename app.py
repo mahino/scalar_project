@@ -17,6 +17,7 @@ from modules.storage_manager import StorageManager
 from modules.payload_scaler import PayloadScaler
 from modules.blueprint_generator import BlueprintGenerator
 from modules.live_uuid_processor import LiveUuidProcessor
+from modules.analyzer_manager import AnalyzerManager
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,6 +31,7 @@ storage_manager = StorageManager(BASE_DIR, logger)
 payload_scaler = PayloadScaler(logger)
 blueprint_generator = BlueprintGenerator(logger)
 live_uuid_processor = LiveUuidProcessor(logger)
+analyzer_manager = AnalyzerManager(logger, BASE_DIR)
 
 # ============================================================================
 # BASIC ROUTES
@@ -1070,6 +1072,184 @@ def get_images():
             
     except Exception as e:
         logger.error(f"Exception in get_images: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# ANALYZER API ROUTES
+# ============================================================================
+
+@app.route('/api/analyzer/ssh-connect', methods=['POST'])
+def analyzer_ssh_connect():
+    """Test SSH connection to cluster"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        logger.info(f"Testing SSH connection to {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.ssh_connect(pc_ip, cluster_type)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"SSH connection error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/kubeconfig-setup', methods=['POST'])
+def analyzer_kubeconfig_setup():
+    """Setup configuration for the cluster"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        config_type = "kubeconfig" if cluster_type == "ncm" else "Docker"
+        logger.info(f"Setting up {config_type} for {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.setup_kubeconfig(pc_ip, cluster_type)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Kubeconfig setup error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/discover-pods', methods=['POST'])
+def analyzer_discover_pods():
+    """Discover services (pods for NCM, containers for PC)"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        namespace = data.get('namespace', 'ntnx-ncm-selfservice')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        service_type = "pods" if cluster_type == "ncm" else "containers"
+        logger.info(f"Discovering {service_type} for {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.discover_pods(pc_ip, cluster_type, namespace)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Pod discovery error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/collect-logs', methods=['POST'])
+def analyzer_collect_logs():
+    """Collect logs from discovered services"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        namespace = data.get('namespace', 'ntnx-ncm-selfservice')
+        pods = data.get('pods', [])
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        if not pods:
+            return jsonify({'error': 'Service list is required'}), 400
+        
+        force_refresh = data.get('force_refresh', False)
+        
+        service_type = "pods" if cluster_type == "ncm" else "containers"
+        logger.info(f"Collecting logs from {len(pods)} {service_type} for {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.collect_logs(pc_ip, cluster_type, namespace, pods, force_refresh)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Log collection error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/check-existing-logs', methods=['POST'])
+def analyzer_check_existing_logs():
+    """Check if logs already exist for this PC and cluster type"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        logger.info(f"Checking existing logs for {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager._check_existing_logs(pc_ip, cluster_type)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Check existing logs error: {str(e)}")
+        return jsonify({'exists': False, 'error': str(e)}), 500
+
+@app.route('/api/analyzer/analyze-logs', methods=['POST'])
+def analyzer_analyze_logs():
+    """Analyze collected logs"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        logger.info(f"Analyzing logs for {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.analyze_logs(pc_ip, cluster_type)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Log analysis error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/get-flow', methods=['POST'])
+def analyzer_get_flow():
+    """Get application flow diagram data"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        cluster_type = data.get('cluster_type', 'pc')
+        application_uuid = data.get('application_uuid')
+        
+        if not pc_ip:
+            return jsonify({'error': 'IP address is required'}), 400
+        
+        if not application_uuid:
+            return jsonify({'error': 'Application UUID is required'}), 400
+        
+        logger.info(f"Getting flow for application {application_uuid} on {cluster_type} cluster {pc_ip}")
+        result = analyzer_manager.get_application_flow(pc_ip, application_uuid, cluster_type)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Flow retrieval error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyzer/cleanup', methods=['POST'])
+def analyzer_cleanup():
+    """Clean up analyzer workspace"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')  # Optional - if not provided, cleans everything
+        
+        logger.info(f"Cleaning up analyzer workspace for {pc_ip if pc_ip else 'all'}")
+        analyzer_manager.cleanup_workspace(pc_ip)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Workspace cleaned up for {pc_ip if pc_ip else "all clusters"}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Cleanup error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================

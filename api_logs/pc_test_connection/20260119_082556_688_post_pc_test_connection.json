@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-01-19T08:25:56.688161",
+  "api_name": "pc_test_connection",
+  "endpoint": "/api/live-uuid/test-connection",
+  "method": "POST",
+  "request_data": {
+    "pc_url": "10.33.96.20",
+    "username": "admin",
+    "password": "Nutanix.123"
+  },
+  "response_data": {
+    "success": false,
+    "error": "Invalid URL '10.33.96.20/api/nutanix/v3/projects/list': No scheme supplied. Perhaps you meant https://10.33.96.20/api/nutanix/v3/projects/list?"
+  },
+  "status_code": 500,
+  "error": "Invalid URL '10.33.96.20/api/nutanix/v3/projects/list': No scheme supplied. Perhaps you meant https://10.33.96.20/api/nutanix/v3/projects/list?"
+}
