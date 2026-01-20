@@ -1252,6 +1252,26 @@ def analyzer_cleanup():
         logger.error(f"Cleanup error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/analyzer/cleanup-logs', methods=['POST'])
+def analyzer_cleanup_logs():
+    """Clean up log directories by removing folders and keeping only *.log* files"""
+    try:
+        data = request.get_json()
+        pc_ip = data.get('pc_ip')
+        directories = data.get('directories')  # Optional - defaults to standard log dirs
+        
+        if not pc_ip:
+            return jsonify({'error': 'PC IP address is required'}), 400
+        
+        logger.info(f"Cleaning up log directories for {pc_ip}")
+        result = analyzer_manager.cleanup_log_directories(pc_ip, directories)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Log cleanup error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # ============================================================================
 # MAIN APPLICATION ENTRY POINT
 # ============================================================================
