@@ -1,0 +1,9 @@
+{
+  "pc_ip": "10.33.96.20",
+  "cluster_type": "pc",
+  "collection_time": "2026-01-20T15:23:27.571585",
+  "success": true,
+  "services_count": 1,
+  "files_count": 6,
+  "total_size_mb": 30.474536895751953
+}

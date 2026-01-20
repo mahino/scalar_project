@@ -10257,6 +10257,7 @@ Example structure:
                 
                 analyzerState.selectedApp = selectedUuid;
                 analyzerState.flowData = flowData;
+                analyzerState.currentFlowData = flowData;
                 
                 // Render flow diagram
                 renderFlowDiagram(flowData);
@@ -10561,6 +10562,152 @@ Example structure:
                 `;
             }
             
+            // Timeline Analysis Section
+            if (flowData.timeline_analysis && flowData.timeline_analysis.timeline_events) {
+                diagramHtml += `
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <h6 style="color: var(--accent-blue); margin-bottom: 0;">📊 Complete Timeline Analysis</h6>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-sm btn-outline-primary" onclick="exportTimelineReport()">
+                                    <i class="bi bi-download"></i> Export Report
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="copyTimelineData()">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Timeline Header Info -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-green);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">App UUID</div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; word-break: break-all;">${flowData.timeline_analysis.app_uuid || 'N/A'}</div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-orange);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">Total Events</div>
+                                <div style="font-size: 1.2rem; font-weight: 600;">${flowData.timeline_analysis.total_events || 0}</div>
+                            </div>
+                            <div style="background: rgba(139, 92, 246, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-purple);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">Services Involved</div>
+                                <div style="font-size: 1.2rem; font-weight: 600;">${flowData.timeline_analysis.services_involved || 0}</div>
+                            </div>
+                            <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-red);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">Status</div>
+                                <div style="font-size: 1rem; font-weight: 600; color: ${flowData.timeline_analysis.performance_metrics?.status === 'SUCCESS' ? 'var(--accent-green)' : 'var(--accent-orange)'};">
+                                    ${flowData.timeline_analysis.performance_metrics?.status === 'SUCCESS' ? '✅ SUCCESS' : '⚠️ INCOMPLETE'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Reference IDs -->
+                        ${flowData.timeline_analysis.reference_ids && Object.keys(flowData.timeline_analysis.reference_ids).length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h6 style="color: var(--accent-purple); margin-bottom: 10px;">🔗 Reference IDs</h6>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
+                                ${Object.entries(flowData.timeline_analysis.reference_ids).map(([key, value]) => `
+                                    <div style="background: rgba(30, 41, 59, 0.5); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                        <span style="color: var(--accent-blue); font-weight: 600;">${key.toUpperCase()}:</span>
+                                        <span style="color: var(--text-primary); font-size: 0.85rem; word-break: break-all;">${value}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- Timeline Events Table -->
+                        <div style="margin-bottom: 20px;">
+                            <h6 style="color: var(--accent-blue); margin-bottom: 10px;">🔄 Timeline Events</h6>
+                            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                                <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                    <thead style="background: rgba(30, 41, 59, 0.8); position: sticky; top: 0;">
+                                        <tr>
+                                            <th style="padding: 12px 8px; text-align: left; color: var(--accent-blue); border-bottom: 1px solid var(--border-color);">Time</th>
+                                            <th style="padding: 12px 8px; text-align: left; color: var(--accent-blue); border-bottom: 1px solid var(--border-color);">Service</th>
+                                            <th style="padding: 12px 8px; text-align: left; color: var(--accent-blue); border-bottom: 1px solid var(--border-color);">Operation</th>
+                                            <th style="padding: 12px 8px; text-align: left; color: var(--accent-blue); border-bottom: 1px solid var(--border-color);">Target Service</th>
+                                            <th style="padding: 12px 8px; text-align: left; color: var(--accent-blue); border-bottom: 1px solid var(--border-color);">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${flowData.timeline_analysis.timeline_events.map((event, index) => `
+                                            <tr style="border-bottom: 1px solid var(--border-color); ${index % 2 === 0 ? 'background: rgba(30, 41, 59, 0.2);' : ''}">
+                                                <td style="padding: 10px 8px; font-family: 'JetBrains Mono', monospace; color: var(--accent-green);">
+                                                    ${event.timestamp ? event.timestamp.substring(11, 23) : 'N/A'}
+                                                </td>
+                                                <td style="padding: 10px 8px; font-weight: 600; color: var(--accent-purple);">
+                                                    ${event.service || 'N/A'}
+                                                </td>
+                                                <td style="padding: 10px 8px; color: var(--text-primary);">
+                                                    ${event.operation || 'N/A'}
+                                                </td>
+                                                <td style="padding: 10px 8px; color: var(--accent-orange);">
+                                                    ${event.target_service || 'N/A'}
+                                                </td>
+                                                <td style="padding: 10px 8px; color: var(--text-secondary); font-size: 0.8rem;">
+                                                    ${event.details || ''}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Analysis -->
+                        ${flowData.timeline_analysis.performance_metrics ? `
+                        <div>
+                            <h6 style="color: var(--accent-orange); margin-bottom: 15px;">📊 Performance Analysis</h6>
+                            
+                            <!-- Overall Metrics -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">Total Duration</div>
+                                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent-green);">
+                                        ${flowData.timeline_analysis.performance_metrics.total_duration_ms ? 
+                                            (flowData.timeline_analysis.performance_metrics.total_duration_ms / 1000).toFixed(2) + 's' : 'N/A'}
+                                    </div>
+                                </div>
+                                ${Object.entries(flowData.timeline_analysis.performance_metrics.service_counts || {}).map(([service, count]) => `
+                                    <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">${service}</div>
+                                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent-blue);">${count} ops</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <!-- Bottlenecks -->
+                            ${flowData.timeline_analysis.performance_metrics.bottlenecks && flowData.timeline_analysis.performance_metrics.bottlenecks.length > 0 ? `
+                            <div>
+                                <h6 style="color: var(--accent-red); margin-bottom: 10px;">⚠️ Bottlenecks Identified (>100ms)</h6>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${flowData.timeline_analysis.performance_metrics.bottlenecks.map(bottleneck => `
+                                        <div style="background: rgba(239, 68, 68, 0.1); padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <span style="font-weight: 600; color: var(--accent-red);">${bottleneck.service}</span>
+                                                    <span style="color: var(--text-secondary); margin-left: 8px;">${bottleneck.operation}</span>
+                                                </div>
+                                                <div style="font-family: 'JetBrains Mono', monospace; color: var(--accent-orange); font-weight: 600;">
+                                                    ${bottleneck.duration_ms}ms
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : `
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 8px; border-left: 3px solid var(--accent-green);">
+                                <div style="color: var(--accent-green); font-weight: 600;">✅ No significant bottlenecks detected</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">All operations completed in under 100ms</div>
+                            </div>
+                            `}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
             diagramHtml += `
                 </div>
             `;
@@ -10580,6 +10727,106 @@ Example structure:
                 'EPSILON': 'Container Host'
             };
             return descriptions[serviceName] || 'Unknown Service';
+        }
+        
+        function exportTimelineReport() {
+            if (!analyzerState.currentFlowData || !analyzerState.currentFlowData.timeline_analysis) {
+                showToast('No timeline data available to export', 'error');
+                return;
+            }
+            
+            const timelineData = analyzerState.currentFlowData.timeline_analysis;
+            
+            // Generate markdown report similar to del.txt
+            let markdown = `# Complete App-Create Flow Timeline\n`;
+            markdown += `**Generated for App UUID:** ${timelineData.app_uuid}\n`;
+            markdown += `**Analysis Date:** ${new Date().toLocaleString()}\n\n`;
+            
+            // Reference IDs
+            if (timelineData.reference_ids && Object.keys(timelineData.reference_ids).length > 0) {
+                markdown += `## Reference IDs\n`;
+                Object.entries(timelineData.reference_ids).forEach(([key, value]) => {
+                    markdown += `- **${key.toUpperCase()}:** \`${value}\`\n`;
+                });
+                markdown += `\n---\n\n`;
+            }
+            
+            // Timeline Events
+            markdown += `## 🔄 COMPLETE FLOW TIMELINE\n\n`;
+            markdown += `| Time | Service | Operation | Target Service | Details |\n`;
+            markdown += `|------|---------|-----------|----------------|---------|\n`;
+            
+            timelineData.timeline_events.forEach(event => {
+                const time = event.timestamp ? event.timestamp.substring(11, 23) : 'N/A';
+                markdown += `| **${time}** | **${event.service}** | ${event.operation} | **${event.target_service}** | ${event.details || ''} |\n`;
+            });
+            
+            // Performance Analysis
+            if (timelineData.performance_metrics) {
+                markdown += `\n---\n\n## 📊 PERFORMANCE ANALYSIS\n\n`;
+                markdown += `### Overall Metrics\n`;
+                markdown += `- **Total Flow Duration:** ${timelineData.performance_metrics.total_duration_ms ? (timelineData.performance_metrics.total_duration_ms / 1000).toFixed(2) + 's' : 'N/A'}\n`;
+                markdown += `- **Number of Operations:** ${timelineData.total_events}\n`;
+                markdown += `- **Services Involved:** ${timelineData.services_involved}\n\n`;
+                
+                // Bottlenecks
+                markdown += `### Bottlenecks Identified\n`;
+                if (timelineData.performance_metrics.bottlenecks && timelineData.performance_metrics.bottlenecks.length > 0) {
+                    timelineData.performance_metrics.bottlenecks.forEach(bottleneck => {
+                        markdown += `- **${bottleneck.service}** - ${bottleneck.operation}: ${bottleneck.duration_ms}ms ⚠️\n`;
+                    });
+                } else {
+                    markdown += `- No significant bottlenecks detected (all operations < 100ms) ✅\n`;
+                }
+                
+                // Service Performance
+                if (timelineData.performance_metrics.service_counts) {
+                    markdown += `\n### Service Performance\n`;
+                    Object.entries(timelineData.performance_metrics.service_counts).forEach(([service, count]) => {
+                        markdown += `- **${service}:** ${count} operations\n`;
+                    });
+                }
+                
+                markdown += `\n---\n\n## 🎯 ANALYSIS SUMMARY\n\n`;
+                markdown += `**Status:** ${timelineData.performance_metrics.status === 'SUCCESS' ? '✅ SUCCESS' : '❌ INCOMPLETE'}\n`;
+                markdown += `**Critical Path:** STYX → JOVE → HERCULES → External Services\n\n`;
+                markdown += `---\n\n*Generated by Scalar Project Timeline Analyzer*\n`;
+            }
+            
+            // Download the markdown file
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `timeline_analysis_${timelineData.app_uuid ? timelineData.app_uuid.substring(0, 8) : 'unknown'}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Timeline report exported successfully!', 'success');
+        }
+        
+        function copyTimelineData() {
+            if (!analyzerState.currentFlowData || !analyzerState.currentFlowData.timeline_analysis) {
+                showToast('No timeline data available to copy', 'error');
+                return;
+            }
+            
+            const timelineData = analyzerState.currentFlowData.timeline_analysis;
+            let text = `Timeline Analysis for ${timelineData.app_uuid}\n`;
+            text += `Total Events: ${timelineData.total_events}, Services: ${timelineData.services_involved}\n\n`;
+            
+            timelineData.timeline_events.forEach(event => {
+                const time = event.timestamp ? event.timestamp.substring(11, 23) : 'N/A';
+                text += `${time} | ${event.service} | ${event.operation} | ${event.target_service} | ${event.details || ''}\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Timeline data copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy timeline data', 'error');
+            });
         }
         
         function copyAsciiDiagram() {

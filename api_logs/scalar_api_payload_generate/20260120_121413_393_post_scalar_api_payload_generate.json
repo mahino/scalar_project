@@ -1,0 +1,63 @@
+{
+  "timestamp": "2026-01-20T12:14:13.393348",
+  "api_name": "scalar_api_payload_generate",
+  "endpoint": "/api/payload/generate",
+  "method": "POST",
+  "request_data": {
+    "api_url": "blueprint",
+    "entity_counts": {
+      "spec.resources.app_profile_list": 1,
+      "spec.resources.app_profile_list.deployment_create_list": 1,
+      "spec.resources.service_definition_list": 1,
+      "spec.resources.credential_definition_list": 100,
+      "options.install_runbook.task_definition_list": 11,
+      "options.uninstall_runbook.task_definition_list": 11
+    },
+    "blueprint_type": "multi_vm",
+    "profile_options": {
+      "action_list": 0,
+      "snapshot_config_list": 0,
+      "restore_config_list": 0,
+      "patch_list": 0
+    },
+    "include_guest_customization": true,
+    "live_uuids": {
+      "project": {
+        "uuid": "c60c5fee-bfaa-4bd3-9ed6-64c65e267644",
+        "name": "mohan_testg"
+      },
+      "account": {
+        "uuid": "4f4b8526-c507-4215-bcf6-7aad1a569efa",
+        "name": "NTNX_LOCAL_AZ",
+        "pc_uuid": "dde11114-a4df-4c7a-809b-1515c94f9739",
+        "original_uuid": "4f4b8526-c507-4215-bcf6-7aad1a569efa"
+      },
+      "cluster": {
+        "uuid": "00064881-ed30-1646-0607-ac1f6b11c911",
+        "name": "auto_cluster_qms_mohan_as1_f6a28ac322b2"
+      },
+      "environment": {
+        "uuid": "ca0d9621-d191-a4e8-bd4a-6ffc8e237c51",
+        "name": "ca0d9621-d191-a4e8-bd4a-6ffc8e237c51"
+      },
+      "network": {
+        "uuid": "",
+        "name": ""
+      },
+      "subnet": {
+        "uuid": "873a131b-3e44-4b31-8480-efb4264ff2f9",
+        "name": "vlan.1006"
+      },
+      "image": {
+        "uuid": "21413201-a07a-43cf-af51-4ec85b953d0a",
+        "name": "Centos7HadoopMaster"
+      }
+    }
+  },
+  "response_data": {
+    "status": "success",
+    "payload_size": 7280
+  },
+  "status_code": 200,
+  "error": null
+}

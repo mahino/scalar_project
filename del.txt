@@ -1,0 +1,136 @@
+# Complete App-Create Flow Timeline
+**Generated for App UUID:** be7fec8f-53b7-49f0-9c33-2009a65238ef  
+**App Name:** Unknown  
+**Blueprint UUID:** aee70946-aaba-4d27-a071-9400242ef768  
+**Analysis Date:** 2026-01-20 13:20:27  
+
+## Reference IDs
+- **Root Request (rr):** `36492f21-cc70-4a7d-ba54-93f8a344807c`
+- **Parent Request (pr):** `0d599b5a-c797-4b44-811a-71597efe09cf` 
+- **Client Request (cr):** `45792807-753f-425d-9aa4-8bfe38eb28d6`
+
+---
+
+## 🔄 COMPLETE FLOW TIMELINE
+
+| Time | Service | Operation | Target Service | Details |
+|------|---------|-----------|----------------|---------|
+| **03:03:25.995** | **STYX** | Auth Request | **IAMv2 Service** |  |
+| **03:03:26.001** | **STYX** | Auth Complete | **Internal** |  |
+| **03:03:26.074** | **STYX** | Project Lookup | **App Blueprint Helper** |  |
+| **03:03:26.190** | **STYX** | Blueprint Launch | **Blueprint Launch API** |  |
+| **03:03:26.191** | **STYX** | Hercules Init | **Hercules Service** |  |
+| **03:03:26.191** | **STYX** | Jove Session | **Jove Service** |  |
+| **03:03:26.192** | **STYX** | Jove Request | **Jove Service** |  |
+| **03:03:26.216** | **JOVE** | Blueprint Handler | **Hercules Router** |  |
+| **03:03:26.218** | **JOVE** | Task Creation | **Ergon Utils** |  |
+| **03:03:26.226** | **JOVE** | Ergon Task Stats | **Ergon Utils** |  |
+| **03:03:26.227** | **JOVE** | Request Dispatch | **Request Dispatcher** |  |
+| **03:03:26.227** | **JOVE** | Message Routing | **Request Dispatcher** |  |
+| **03:03:26.227** | **JOVE** | Request Forward | **Worker** |  |
+| **03:03:26.229** | **STYX** | Jove Response | **Jove Service** | Task ID: 0d599b5a-c797-4b44-811a-71597efe09cf |
+| **03:03:26.238** | **JOVE** | Channel Forward | **Worker** |  |
+| **03:03:26.238** | **JOVE** | HTTP Handler | **Worker Listener** |  |
+| **03:03:26.240** | **HERCULES** | Ergon Setup | **Ergon Service** |  |
+| **03:03:26.250** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 2 |
+| **03:03:26.260** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:26.270** | **HERCULES** | Quota Calculation | **Quota Helper** |  |
+| **03:03:26.270** | **HERCULES** | Image Info Request | **Indra Service** |  |
+| **03:03:27.398** | **HERCULES** | Image Info Response | **Indra Service** | Image size: 20.0GB |
+| **03:03:27.403** | **HERCULES** | Policy Config | **Vidura Interface** |  |
+| **03:03:27.405** | **HERCULES** | Policy Request | **Policy Engine** |  |
+| **03:03:27.465** | **HERCULES** | Policy Response | **Policy Engine** |  |
+| **03:03:27.466** | **HERCULES** | Ergon Setup | **Ergon Service** |  |
+| **03:03:27.492** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 3 |
+| **03:03:27.493** | **HERCULES** | Blueprint Clone | **Hercules Helper** |  |
+| **03:03:29.137** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 4 |
+| **03:03:29.148** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 9 |
+| **03:03:29.280** | **STYX** | Auth Request | **IAMv2 Service** |  |
+| **03:03:29.287** | **STYX** | Auth Complete | **Internal** |  |
+| **03:03:29.375** | **STYX** | APP-CREATE-START | **Apps API** |  |
+| **03:03:29.655** | **STYX** | DB Save | **Database** |  |
+| **03:03:29.963** | **STYX** | Hercules Init | **Hercules Service** |  |
+| **03:03:29.963** | **STYX** | Jove Session | **Jove Service** |  |
+| **03:03:29.963** | **STYX** | Jove Request | **Jove Service** |  |
+| **03:03:29.967** | **JOVE** | Run Handler | **Hercules Router** |  |
+| **03:03:29.973** | **JOVE** | Ergon Task Stats | **Ergon Utils** |  |
+| **03:03:29.973** | **JOVE** | Request Dispatch | **Request Dispatcher** |  |
+| **03:03:29.973** | **JOVE** | Message Routing | **Request Dispatcher** |  |
+| **03:03:29.973** | **JOVE** | Request Forward | **Worker** |  |
+| **03:03:29.974** | **STYX** | Jove Response | **Jove Service** | Task ID: 4bcbfc2f-b9da-4937-bd91-df1a63194436 |
+| **03:03:29.976** | **STYX** | APP-CREATE-END | **Apps API** |  |
+| **03:03:29.986** | **JOVE** | Channel Forward | **Worker** |  |
+| **03:03:29.988** | **HERCULES** | Ergon Setup | **Ergon Service** |  |
+| **03:03:29.992** | **STYX** | OS Registration | **Object Store** |  |
+| **03:03:29.996** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 2 |
+| **03:03:30.017** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:30.061** | **HERCULES** | Ergon Setup | **Ergon Service** |  |
+| **03:03:30.063** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 7 |
+| **03:03:30.488** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:30.496** | **HERCULES** | Policy Config | **Vidura Interface** |  |
+| **03:03:30.777** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.285** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.289** | **HERCULES** | Policy Config | **Vidura Interface** |  |
+| **03:03:31.351** | **HERCULES** | Quota Calculation | **Quota Helper** |  |
+| **03:03:31.351** | **HERCULES** | Image Info Request | **Indra Service** |  |
+| **03:03:31.471** | **HERCULES** | Image Info Response | **Indra Service** | Image size: 20.0GB |
+| **03:03:31.734** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.757** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.789** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.879** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.942** | **HERCULES** | Policy Check | **Policy Helper** |  |
+| **03:03:31.966** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 10 |
+| **03:03:32.560** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 3 |
+| **03:03:32.895** | **JOVE** | Ergon Task Stats | **Ergon Utils** |  |
+| **03:03:32.895** | **JOVE** | Request Dispatch | **Request Dispatcher** |  |
+| **03:03:32.895** | **JOVE** | Message Routing | **Request Dispatcher** |  |
+| **03:03:32.896** | **JOVE** | Request Forward | **Worker** |  |
+| **03:03:32.907** | **JOVE** | Channel Forward | **Worker** |  |
+| **03:03:32.934** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 2 |
+| **03:03:33.560** | **HERCULES** | Ergon Setup | **Ergon Service** |  |
+| **03:03:33.570** | **HERCULES** | Milestone Update | **Ergon Helper** | Milestone: 7 |
+| **03:03:33.577** | **JOVE** | Request Dispatch | **Request Dispatcher** |  |
+
+---
+
+## 📊 PERFORMANCE ANALYSIS
+
+### Overall Metrics
+- **Total Flow Duration:** 7582.0ms
+- **Number of Operations:** 75
+- **Services Involved:** 3
+
+### Bottlenecks Identified
+- **STYX** - Project Lookup: 116.0ms ⚠️
+- **HERCULES** - Image Info Request: 1128.0ms ⚠️
+- **HERCULES** - Blueprint Clone: 1644.0ms ⚠️
+- **HERCULES** - Milestone Update: 132.0ms ⚠️
+- **STYX** - APP-CREATE-START: 280.0ms ⚠️
+- **STYX** - DB Save: 308.0ms ⚠️
+- **HERCULES** - Milestone Update: 425.0ms ⚠️
+- **HERCULES** - Policy Config: 281.0ms ⚠️
+- **HERCULES** - Policy Check: 508.0ms ⚠️
+- **HERCULES** - Image Info Request: 120.0ms ⚠️
+- **HERCULES** - Image Info Response: 263.0ms ⚠️
+- **HERCULES** - Milestone Update: 594.0ms ⚠️
+- **HERCULES** - Milestone Update: 335.0ms ⚠️
+- **HERCULES** - Milestone Update: 626.0ms ⚠️
+
+### Service Performance
+- **STYX:** 18 operations
+- **JOVE:** 20 operations
+- **HERCULES:** 37 operations
+
+---
+
+## 🎯 ANALYSIS SUMMARY
+
+**Status:** ✅ SUCCESS  
+**Total Duration:** 7582.0ms  
+**Critical Path:** STYX → JOVE → HERCULES → External Services  
+
+---
+
+*Generated by App Timeline Generator v1.0*  
+*Log Directory: /home/nutanix/log_analyze/nucalm_logs/log*  
+*Generated Events: 75*
