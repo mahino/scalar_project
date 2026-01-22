@@ -517,7 +517,7 @@ class AnalyzerManager:
             # New format from PC logs
             collected_files = collection_result.get('collected_files', [])
             self.logger.info(f"Metadata: Processing {len(collected_files)} collected files")
-            self.logger.info(f"Metadata: First few files: {collected_files[:3]}")
+            self.logger.info(f"Metadata: First few files: {collected_files}")
             
             # Filter out any non-dict items that might have gotten into the list
             valid_files = []
@@ -536,7 +536,7 @@ class AnalyzerManager:
                 total_size_mb = sum(f.get('size', 0) for f in valid_files) / (1024 * 1024)
             except Exception as e:
                 self.logger.error(f"Metadata: Error processing valid_files: {e}")
-                self.logger.error(f"Metadata: valid_files sample: {valid_files[:2]}")
+                self.logger.error(f"Metadata: valid_files sample: {valid_files}")
                 raise
         else:
             # Old format from NCM logs
@@ -832,14 +832,14 @@ class AnalyzerManager:
                                 # First, let's see the directory structure
                                 import os
                                 for root, dirs, files in os.walk(container_dir):
-                                    self.logger.info(f"Directory: {root}, Subdirs: {dirs}, Files: {files[:10]}")
+                                    self.logger.info(f"Directory: {root}, Subdirs: {dirs}, Files: {files}")
                                 
                                 # Look for files recursively, including in subdirectories like 'log/'
                                 all_files = list(container_dir.rglob('*'))
-                                self.logger.info(f"Found {len(all_files)} total extracted items: {[str(f.relative_to(container_dir)) for f in all_files[:10]]}")
+                                self.logger.info(f"Found {len(all_files)} total extracted items: {[str(f.relative_to(container_dir)) for f in all_files]}")
                                 
                                 extracted_files = [f for f in all_files if f.is_file() and self._is_log_file(f.name)]
-                                self.logger.info(f"Found {len(extracted_files)} log files: {[str(f.relative_to(container_dir)) for f in extracted_files[:10]]}")
+                                self.logger.info(f"Found {len(extracted_files)} log files: {[str(f.relative_to(container_dir)) for f in extracted_files]}")
                                 
                                 for log_file in extracted_files:
                                     if log_file.name != f"{container_name}_logs.tar.gz":
@@ -1081,7 +1081,7 @@ class AnalyzerManager:
         # Log summary of collected service logs
         self.logger.info(f"DEBUG: collected_files type: {type(collected_files)}")
         self.logger.info(f"DEBUG: collected_files length: {len(collected_files)}")
-        self.logger.info(f"DEBUG: collected_files sample: {collected_files[:3]}")
+        self.logger.info(f"DEBUG: collected_files sample: {collected_files}")
         
         service_log_summary = {}
         for i, file_info in enumerate(collected_files):
@@ -1470,7 +1470,7 @@ class AnalyzerManager:
                             'service_name': service_type,
                             'service_type': service_type,
                             'line_number': line_num,
-                            'raw_line': line.strip()[:300],  # More context for root request tracking
+                            'raw_line': line.strip(),  # More context for root request tracking
                             'correlation_id': cr_match.group(1) if cr_match else None,
                             'parent_request_id': pr_match.group(1) if pr_match else None,
                             'root_request_id': root_request_id,
@@ -1522,7 +1522,7 @@ class AnalyzerManager:
                 if 'all_line_uuids' in operation:
                     target_related_uuids.update(operation['all_line_uuids'])
         
-        self.logger.info(f"Found {len(target_related_uuids)} related UUIDs from STYX: {list(target_related_uuids)[:5]}...")
+        self.logger.info(f"Found {len(target_related_uuids)} related UUIDs from STYX: {list(target_related_uuids)}...")
         
         # Step 3: Search through actual log files for related operations
         cache_key = f"{styx_app.get('pc_ip', 'unknown')}_pc"  # Assuming PC mode for now
@@ -1606,7 +1606,7 @@ class AnalyzerManager:
                         timestamp = timestamp_match.group() if timestamp_match else None
                         
                         # Extract operation name
-                        operation_name = self._extract_operation_from_line(line, service_type) or line.strip()[:100]
+                        operation_name = self._extract_operation_from_line(line, service_type) or line.strip()
                         
                         found_operations.append({
                             'name': operation_name,
@@ -1616,7 +1616,7 @@ class AnalyzerManager:
                             'service_name': service_name,
                             'service_type': service_type,
                             'line_number': line_num,
-                            'raw_line': line.strip()[:200],
+                            'raw_line': line.strip(),
                             'from_file': log_file.name
                         })
         
@@ -1703,9 +1703,9 @@ class AnalyzerManager:
             
             # Limit processing for very large files to prevent hanging
             max_lines = 50000
-            if len(lines) > max_lines:
-                self.logger.warning(f"Large log file detected ({len(lines)} lines). Processing first {max_lines} lines only.")
-                lines = lines[:max_lines]
+            # if len(lines) > max_lines:
+            #     self.logger.warning(f"Large log file detected ({len(lines)} lines). Processing first {max_lines} lines only.")
+            #     lines = lines[:max_lines]
             
             self.logger.info(f"Processing {len(lines)} lines from {log_file}")
             # Nutanix Calm application operation patterns (based on flow documentation)
@@ -1821,7 +1821,7 @@ class AnalyzerManager:
                             else:
                                 # Check relationships, but limit to avoid excessive correlation
                                 related_uuids = uuid_relationships.get(uuid, set())
-                                for related_uuid in list(related_uuids)[:5]:  # Limit to first 5 relationships
+                                for related_uuid in list(related_uuids):  # Limit to first 5 relationships
                                     if related_uuid in primary_app_uuids:
                                         line_app_uuids.add(related_uuid)
                                         break
@@ -1881,7 +1881,7 @@ class AnalyzerManager:
                                 'type': 'application_operation',
                                 'timestamp': current_timestamp,
                                 'line_number': line_num + 1,
-                                'raw_line': line.strip()[:200],  # First 200 chars for context
+                                'raw_line': line.strip(),  # First 200 chars for context
                                 'related_ids': related_ids,
                                 'all_line_uuids': list(line_uuids)
                             })
@@ -2156,7 +2156,7 @@ class LogFlowAnalyzer:
         
         # Try without microseconds
         try:
-            return datetime.strptime(timestamp_str[:19], "%Y-%m-%d %H:%M:%S")
+            return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
         except ValueError:
             return None
     
@@ -2762,153 +2762,21 @@ class LogFlowAnalyzer:
         return diagram
     
     def _generate_timeline_analysis(self):
-        """Generate detailed timeline analysis similar to del.py functionality"""
-        self.logger.info("Starting timeline analysis generation")
-        if not self.app_data or not self.app_data.get('related_operations'):
-            self.logger.warning(f"Timeline analysis skipped - app_data: {bool(self.app_data)}, related_operations: {bool(self.app_data.get('related_operations') if self.app_data else False)}")
-            return None
-            
-        timeline_events = []
-        reference_ids = {}
+        """Generate detailed timeline analysis using the new TimelineGenerator (based on del.py)"""
+        from .timeline_generator import TimelineGenerator
         
-        # Extract reference IDs from app data
-        app_operations = []
-        for service_ops in self.app_data.get('related_operations', {}).values():
-            app_operations.extend(service_ops)
+        self.logger.info("Starting timeline analysis generation (using enhanced del.py-based TimelineGenerator)")
         
-        # Find reference IDs from operations (like del.py does)
-        for op in app_operations:
-            raw_line = op.get('raw_line', '')
-            # Look for reference IDs in any line that contains APP-CREATE or the app UUID
-            if 'APP-CREATE' in raw_line or self.application_uuid in raw_line:
-                cr_match = re.search(r'\[cr:([a-f0-9-]+)\]', raw_line)
-                pr_match = re.search(r'\[pr:([a-f0-9-]+)\]', raw_line)
-                rr_match = re.search(r'\[rr:([a-f0-9-]+)\]', raw_line)
-                
-                if cr_match:
-                    reference_ids['cr'] = cr_match.group(1)
-                if pr_match:
-                    reference_ids['pr'] = pr_match.group(1)
-                if rr_match:
-                    reference_ids['rr'] = rr_match.group(1)
-                    
-                # Also look for blueprint UUID
-                bp_match = re.search(r'\[BP-([a-f0-9-]+):' + self.application_uuid, raw_line)
-                if bp_match:
-                    reference_ids['blueprint_uuid'] = bp_match.group(1)
+        # Determine the log directory paths for both NUCALM and EPSILON
+        nucalm_log_dir = Path("/Users/mohan.as1/Documents/scalar_project/analyzer_workspace/logs/10.33.96.20_pc/nucalm/log")
+        epsilon_log_dir = Path("/Users/mohan.as1/Documents/scalar_project/analyzer_workspace/logs/10.33.96.20_pc/epsilon/log")
         
-        # Define comprehensive operation patterns exactly like del.py
-        operation_patterns = {
-            # STYX patterns
-            'APP-CREATE-START': ('APP-CREATE-START', 'Apps API'),
-            'APP-CREATE-END': ('APP-CREATE-END', 'Apps API'),
-            'iamv2_interface.*GET request': ('Auth Request', 'IAMv2 Service'),
-            'username dump:': ('Auth Complete', 'Internal'),
-            'Fetching project by name:': ('Project Lookup', 'App Blueprint Helper'),
-            'Calling out bp launch': ('Blueprint Launch', 'Blueprint Launch API'),
-            'hercules_interface.*scaleout mode': ('Hercules Init', 'Hercules Service'),
-            'jove_interface.*session created': ('Jove Session', 'Jove Service'),
-            'jove_interface.*Request-': ('Jove Request', 'Jove Service'),
-            'jove_interface.*Response-': ('Jove Response', 'Jove Service'),
-            'os_query_handler_interface.*POST': ('OS Registration', 'Object Store'),
-            'saveing Application object': ('DB Save', 'Database'),
-            
-            # JOVE patterns
-            'Got blueprint launch request': ('Blueprint Handler', 'Hercules Router'),
-            'Got action run request': ('Run Handler', 'Hercules Router'),
-            'request id provided.*WALed task identity': ('Task Creation', 'Ergon Utils'),
-            'ergon_task_create with time.*msec': ('Ergon Task Stats', 'Ergon Utils'),
-            'ergon\.TaskCreate with time.*msec': ('Ergon Task', 'Ergon Service'),
-            'Blueprint launch ergon task created': ('Task Confirmation', 'Hercules Router'),
-            'sending request packet over channel': ('Request Dispatch', 'Request Dispatcher'),
-            'Anycast message': ('Message Routing', 'Request Dispatcher'),
-            'get worker message': ('Worker Selection', 'Worker Manager'),
-            'Got worker.*hercules-.*-.*-.*-.*-': ('Worker Assigned', 'Worker Manager'),
-            'old state ACTIVE new state BUSY': ('Worker State Change', 'Worker'),
-            'Sending request Replayable.*worker router': ('Request Forward', 'Worker'),
-            'Sending request over incoming channel': ('Channel Forward', 'Worker'),
-            'workerHTTPHandler.*POST.*blueprint.*launch': ('HTTP Handler', 'Worker Listener'),
-            'workerHTTPHandler.*POST.*apps.*run': ('HTTP Handler', 'Worker Listener'),
-            'GetWorkerStateWithWorkerID with time.*msec': ('DB Operation', 'Worker State'),
-            'Save WorkerState with time.*msec': ('DB Save', 'Worker State'),
-            
-            # HERCULES patterns
-            'Creating stub for Ergon': ('Ergon Setup', 'Ergon Service'),
-            'Updated wal and workstate milestone': ('Milestone Update', 'Ergon Helper'),
-            'Policy feature is enabled': ('Policy Check', 'Policy Helper'),
-            'Making api call to fetch size': ('Quota Calculation', 'Quota Helper'),
-            'Request-.*indra/sync/ImageInfo': ('Image Info Request', 'Indra Service'),
-            'Response-.*image_size_bytes': ('Image Info Response', 'Indra Service'),
-            'Policy config ips': ('Policy Config', 'Vidura Interface'),
-            'plum request body': ('Policy Request', 'Policy Engine'),
-            'SUCCESS.*APPROVED': ('Policy Response', 'Policy Engine'),
-            'Cloning the BP': ('Blueprint Clone', 'Hercules Helper'),
-        }
+        # Create timeline generator instance with both directories
+        timeline_gen = TimelineGenerator(nucalm_log_dir, epsilon_log_dir, self.logger)
         
-        # Process operations to create timeline events
-        self.logger.info(f"Processing {len(self.app_data.get('related_operations', {}))} services for timeline events")
+        # Generate timeline analysis
+        result = timeline_gen.generate_timeline_analysis(self.application_uuid, nucalm_log_dir, epsilon_log_dir)
         
-        # Get reference IDs for filtering (like del.py does)
-        ref_ids_to_check = []
-        if reference_ids:
-            for key in ['cr', 'pr', 'rr']:
-                if reference_ids.get(key):
-                    ref_ids_to_check.append(reference_ids[key])
-        
-        for service_key, operations in self.app_data.get('related_operations', {}).items():
-            # Clean up service name (remove .log suffix and get base name)
-            if '_' in service_key:
-                service_name = service_key.split('_')[1].upper()
-            else:
-                service_name = service_key.upper()
-            
-            # Remove .LOG suffix if present
-            if service_name.endswith('.LOG'):
-                service_name = service_name[:-4]
-                
-            self.logger.info(f"Processing service {service_name} with {len(operations)} operations")
-            
-            for op in operations:
-                raw_line = op.get('raw_line', '')
-                timestamp = op.get('timestamp', '')
-                
-                # Filter by reference IDs like del.py does (only process lines with our reference IDs)
-                if ref_ids_to_check:
-                    if not any(ref_id in raw_line for ref_id in ref_ids_to_check):
-                        continue
-                
-                # Check against patterns
-                for pattern, (operation_name, target_service) in operation_patterns.items():
-                    if re.search(pattern, raw_line, re.IGNORECASE):
-                        # Extract additional details
-                        details = self._extract_timeline_details(raw_line, operation_name)
-                        
-                        timeline_events.append({
-                            'timestamp': timestamp,
-                            'service': service_name,
-                            'operation': operation_name,
-                            'target_service': target_service,
-                            'details': details,
-                            'raw_line': raw_line[:100] + '...' if len(raw_line) > 100 else raw_line
-                        })
-                        break
-        
-        # Sort by timestamp
-        timeline_events.sort(key=lambda x: x['timestamp'] if x['timestamp'] else '')
-        
-        # Calculate performance metrics
-        performance_metrics = self._calculate_timeline_performance_metrics(timeline_events)
-        
-        result = {
-            'app_uuid': self.application_uuid,
-            'reference_ids': reference_ids,
-            'timeline_events': timeline_events[:100],  # Limit to first 100 events
-            'performance_metrics': performance_metrics,
-            'total_events': len(timeline_events),
-            'services_involved': len(set(e['service'] for e in timeline_events))
-        }
-        
-        self.logger.info(f"Timeline analysis completed with {len(timeline_events)} events")
         return result
     
     def _extract_timeline_details(self, line, operation):
@@ -3192,7 +3060,7 @@ class LogFlowAnalyzer:
             return 'Unknown'
         if isinstance(timestamp, str):
             return timestamp
-        return timestamp.strftime('%H:%M:%S.%f')[:-3]
+        return timestamp.strftime('%H:%M:%S.%f')
     
     def _build_ascii_flow_sequence(self, events: List[Dict]) -> List[Dict]:
         """Build actual application journey path from log data - simple and clear"""
@@ -3335,7 +3203,7 @@ Key Events Timeline:
         
         # Add key events timeline
         events = self.flow_data.get('key_events', [])
-        for event in events[:10]:  # Show first 10 events
+        for event in events:  # Show first 10 events
             timestamp = self._format_time_for_ascii(event.get('timestamp'))
             service = event.get('service', 'Unknown')
             event_name = event.get('event', 'Unknown')
@@ -3424,7 +3292,7 @@ Key Events Timeline:
                             'instance_name': full_service_name,
                             'event_count': len(operations),
                             'service_type': service_type,
-                            'operations': operations[:3],  # Keep sample operations for display
+                            'operations': operations,  # Keep sample operations for display
                             'all_operations': operations  # Keep ALL operations for timestamp analysis
                         })
                         
@@ -3454,7 +3322,7 @@ Key Events Timeline:
                         }
                         
                         # Also check for service names in the actual log content
-                        for op in operations[:3]:  # Check first few operations for service names
+                        for op in operations:  # Check first few operations for service names
                             raw_line = op.get('raw_line', '').lower()
                             for std_service in ['jove', 'hercules', 'durga', 'indra', 'algalon', 'helios', 'vajra', 'karan', 'arjun']:
                                 if std_service in raw_line and std_service.upper() not in service_instances:
@@ -3464,7 +3332,7 @@ Key Events Timeline:
                                         'instance_name': std_service.upper(),
                                         'event_count': len([o for o in operations if std_service in o.get('raw_line', '').lower()]),
                                         'service_type': service_type,
-                                        'operations': [o for o in operations if std_service in o.get('raw_line', '').lower()][:3]
+                                        'operations': [o for o in operations if std_service in o.get('raw_line', '').lower()]
                                     })
                         
                         # Service already added above in the main parsing logic

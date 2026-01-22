@@ -18,6 +18,7 @@ from modules.payload_scaler import PayloadScaler
 from modules.blueprint_generator import BlueprintGenerator
 from modules.live_uuid_processor import LiveUuidProcessor
 from modules.analyzer_manager import AnalyzerManager
+from modules.api_logger import api_logger
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -1271,6 +1272,664 @@ def analyzer_cleanup_logs():
     except Exception as e:
         logger.error(f"Log cleanup error: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# DASHBOARD API ENDPOINTS
+# ============================================================================
+
+@app.route('/api/dashboard/node-details', methods=['POST'])
+def dashboard_get_node_details():
+    """Fetch node details from Jarvis API"""
+    start_time = datetime.now()
+    request_data = request.get_json() or {}
+    client_ip = request.remote_addr
+    
+    try:
+        pool_id = request_data.get('pool_id')
+        limit = request_data.get('limit', 25)
+        page = request_data.get('page', 1)
+        start = request_data.get('start', 0)
+        
+        if not pool_id:
+            error_response = {'error': 'Pool ID is required'}
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            # Log internal API call
+            api_logger.log_internal_request(
+                endpoint='/api/dashboard/node-details',
+                method='POST',
+                request_data=request_data,
+                response_data=error_response,
+                status_code=400,
+                duration_ms=duration_ms,
+                client_ip=client_ip
+            )
+            
+            return jsonify(error_response), 400
+        
+        # Construct Jarvis API URL
+        jarvis_url = f"https://jarvis.eng.nutanix.com/api/v2/pools/{pool_id}/node_details"
+        params = {
+            '_dc': int(datetime.now().timestamp() * 1000),
+            'page': page,
+            'start': start,
+            'limit': limit
+        }
+        
+        logger.info(f"Fetching node details from Jarvis API: {jarvis_url}")
+        logger.info(f"Parameters: {params}")
+        
+        # For demo purposes, return mock data if pool_id is "demo"
+        if pool_id == "demo":
+            mock_nodes = [
+                {
+                    "is_enabled": True,
+                    "comment": "Demo node for testing",
+                    "name": "demo-node-1",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.user",
+                    "hardware": {
+                        "mem": "540 GB",
+                        "storage": [
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "1.92 TB"},
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sdb", "type": "SSD", "size": "1.92 TB"}
+                        ],
+                        "cpu_cores": "64",
+                        "num_cpu_sockets": "2",
+                        "position": "A",
+                        "model": "NX-3060-G8",
+                        "cpu": "Intel Xeon Silver 4314",
+                        "credit_estimate": 100,
+                        "serial": "DEMO123456"
+                    },
+                    "network_gateway": "10.46.116.1",
+                    "_id": {"$oid": "demo123456789"},
+                    "cluster_name": "demo_cluster"
+                },
+                {
+                    "is_enabled": False,
+                    "comment": "EOL node (Disabled for demo)",
+                    "name": "demo-node-2",
+                    "cluster_created_at": {"$date": 1746771421174},
+                    "cluster_owner": "demo.admin",
+                    "hardware": {
+                        "mem": "270 GB",
+                        "storage": [
+                            {"model": "SAMSUNG MZ7KM960", "disk": "/dev/sda", "type": "SSD", "size": "960 GB"},
+                            {"model": "ST2000NM0055", "disk": "/dev/sdb", "type": "HDD", "size": "2.0 TB"}
+                        ],
+                        "cpu_cores": "32",
+                        "num_cpu_sockets": "2",
+                        "position": "B",
+                        "model": "NX-1065-G5",
+                        "cpu": "Intel Xeon E5-2620 v4",
+                        "credit_estimate": 165,
+                        "serial": "DEMO789012"
+                    },
+                    "network_gateway": "10.46.208.1",
+                    "_id": {"$oid": "demo789012345"},
+                    "cluster_name": "demo_cluster_old"
+                },
+                {
+                    "is_enabled": True,
+                    "comment": "High memory node",
+                    "name": "demo-node-3",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.user",
+                    "hardware": {
+                        "mem": "472 GB",
+                        "storage": [{"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "1.92 TB"}],
+                        "cpu_cores": "48",
+                        "num_cpu_sockets": "2",
+                        "position": "C",
+                        "model": "NX-3060-G7",
+                        "cpu": "Intel Xeon Gold 6248R",
+                        "credit_estimate": 120,
+                        "serial": "DEMO345678"
+                    },
+                    "network_gateway": "10.46.116.1",
+                    "_id": {"$oid": "demo345678901"},
+                    "cluster_name": "demo_cluster"
+                },
+                {
+                    "is_enabled": True,
+                    "comment": "Medium memory node",
+                    "name": "demo-node-4",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.admin",
+                    "hardware": {
+                        "mem": "269 GB",
+                        "storage": [{"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "960 GB"}],
+                        "cpu_cores": "32",
+                        "num_cpu_sockets": "2",
+                        "position": "D",
+                        "model": "NX-1065-G6",
+                        "cpu": "Intel Xeon Silver 4210R",
+                        "credit_estimate": 90,
+                        "serial": "DEMO456789"
+                    },
+                    "network_gateway": "10.46.208.1",
+                    "_id": {"$oid": "demo456789012"},
+                    "cluster_name": "demo_cluster_old"
+                },
+                {
+                    "is_enabled": True,
+                    "comment": "Low memory node",
+                    "name": "demo-node-5",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.user",
+                    "hardware": {
+                        "mem": "67 GB",
+                        "storage": [{"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "480 GB"}],
+                        "cpu_cores": "16",
+                        "num_cpu_sockets": "1",
+                        "position": "E",
+                        "model": "NX-1065-G4",
+                        "cpu": "Intel Xeon E5-2630 v3",
+                        "credit_estimate": 50,
+                        "serial": "DEMO567890"
+                    },
+                    "network_gateway": "10.46.116.1",
+                    "_id": {"$oid": "demo567890123"},
+                    "cluster_name": "demo_cluster"
+                },
+                {
+                    "is_enabled": True,
+                    "comment": "High capacity node",
+                    "name": "demo-node-6",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.admin",
+                    "hardware": {
+                        "mem": "1024 GB",
+                        "storage": [
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "3.84 TB"},
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sdb", "type": "SSD", "size": "3.84 TB"}
+                        ],
+                        "cpu_cores": "96",
+                        "num_cpu_sockets": "2",
+                        "position": "F",
+                        "model": "NX-8155-G6",
+                        "cpu": "Intel Xeon Platinum 8280",
+                        "credit_estimate": 200,
+                        "serial": "DEMO678901"
+                    },
+                    "network_gateway": "10.46.208.1",
+                    "_id": {"$oid": "demo678901234"},
+                    "cluster_name": "demo_cluster_premium"
+                },
+                {
+                    "is_enabled": True,
+                    "comment": "Ultra high memory node",
+                    "name": "demo-node-7",
+                    "cluster_created_at": {"$date": 1759311029435},
+                    "cluster_owner": "demo.admin",
+                    "hardware": {
+                        "mem": "1081 GB",
+                        "storage": [
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sda", "type": "SSD", "size": "7.68 TB"},
+                            {"model": "SAMSUNG SSD", "disk": "/dev/sdb", "type": "SSD", "size": "7.68 TB"}
+                        ],
+                        "cpu_cores": "128",
+                        "num_cpu_sockets": "2",
+                        "position": "G",
+                        "model": "NX-8155-G7",
+                        "cpu": "Intel Xeon Platinum 8380",
+                        "credit_estimate": 250,
+                        "serial": "DEMO789012"
+                    },
+                    "network_gateway": "10.46.208.1",
+                    "_id": {"$oid": "demo789012345"},
+                    "cluster_name": "demo_cluster_premium"
+                }
+            ]
+            
+            demo_response = {
+                'success': True,
+                'nodes': mock_nodes,
+                'total': len(mock_nodes),
+                'page': page,
+                'limit': limit,
+                'demo_mode': True
+            }
+            
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            # Log internal API call for demo mode
+            api_logger.log_internal_request(
+                endpoint='/api/dashboard/node-details',
+                method='POST',
+                request_data=request_data,
+                response_data=demo_response,
+                status_code=200,
+                duration_ms=duration_ms,
+                client_ip=client_ip
+            )
+            
+            return jsonify(demo_response)
+        
+        # Make request to Jarvis API
+        jarvis_start_time = datetime.now()
+        response = None
+        jarvis_error = None
+        
+        try:
+            response = requests.get(jarvis_url, params=params, timeout=30, verify=False)
+            jarvis_duration_ms = (datetime.now() - jarvis_start_time).total_seconds() * 1000
+            
+            if response.status_code == 200:
+                jarvis_data = response.json()
+                
+                # Based on the sample response, the structure is {"data": [...], "success": true}
+                nodes = []
+                total = 0
+                
+                if isinstance(jarvis_data, dict):
+                    if 'data' in jarvis_data:
+                        nodes = jarvis_data['data']
+                        total = len(nodes)  # Calculate total from actual data length
+                        
+                        # Filter out disabled nodes if requested (optional)
+                        # nodes = [node for node in nodes if node.get('is_enabled', True)]
+                        
+                        logger.info(f"Successfully fetched {len(nodes)} nodes from Jarvis API")
+                        logger.info(f"Sample node keys: {list(nodes[0].keys()) if nodes else 'No nodes'}")
+                        
+                        # Log successful Jarvis API call
+                        api_logger.log_jarvis_request(
+                            url=jarvis_url,
+                            method='GET',
+                            params=params,
+                            response_data=jarvis_data,
+                            status_code=response.status_code,
+                            duration_ms=jarvis_duration_ms
+                        )
+                        
+                        success_response = {
+                            'success': True,
+                            'nodes': nodes,
+                            'total': total,
+                            'page': page,
+                            'limit': limit,
+                            'jarvis_success': jarvis_data.get('success', True)
+                        }
+                        
+                        # Log internal API response
+                        total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+                        api_logger.log_internal_request(
+                            endpoint='/api/dashboard/node-details',
+                            method='POST',
+                            request_data=request_data,
+                            response_data=success_response,
+                            status_code=200,
+                            duration_ms=total_duration_ms,
+                            client_ip=client_ip
+                        )
+                        
+                        return jsonify(success_response)
+                    else:
+                        logger.warning(f"Unexpected Jarvis response structure: {list(jarvis_data.keys())}")
+                        
+                        # Log unexpected response structure
+                        api_logger.log_jarvis_request(
+                            url=jarvis_url,
+                            method='GET',
+                            params=params,
+                            response_data=jarvis_data,
+                            status_code=response.status_code,
+                            duration_ms=jarvis_duration_ms,
+                            error="Unexpected response structure"
+                        )
+                        
+                        error_response = {'error': 'Unexpected response structure from Jarvis API'}
+                    total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+                    
+                    api_logger.log_internal_request(
+                        endpoint='/api/dashboard/node-details',
+                        method='POST',
+                        request_data=request_data,
+                        response_data=error_response,
+                        status_code=500,
+                        duration_ms=total_duration_ms,
+                        client_ip=client_ip
+                    )
+                    
+                    return jsonify(error_response), 500
+                else:
+                    logger.warning(f"Jarvis response is not a dictionary: {type(jarvis_data)}")
+                    
+                    # Log invalid response format
+                    api_logger.log_jarvis_request(
+                        url=jarvis_url,
+                        method='GET',
+                        params=params,
+                        response_data={"raw_response": str(jarvis_data)},  # Truncate for logging
+                        status_code=response.status_code,
+                        duration_ms=jarvis_duration_ms,
+                        error="Invalid response format"
+                    )
+                    
+                    error_response = {'error': 'Invalid response format from Jarvis API'}
+                    total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+                    
+                    api_logger.log_internal_request(
+                        endpoint='/api/dashboard/node-details',
+                        method='POST',
+                        request_data=request_data,
+                        response_data=error_response,
+                        status_code=500,
+                        duration_ms=total_duration_ms,
+                        client_ip=client_ip
+                    )
+                    
+                    return jsonify(error_response), 500
+            else:
+                error_msg = f"Jarvis API returned status {response.status_code}: {response.text}"
+                logger.error(error_msg)
+                
+                # Log failed Jarvis API call
+                api_logger.log_jarvis_request(
+                    url=jarvis_url,
+                    method='GET',
+                    params=params,
+                    response_data={"error_text": response.text},  # Truncate for logging
+                    status_code=response.status_code,
+                    duration_ms=jarvis_duration_ms,
+                    error=error_msg
+                )
+                
+                error_response = {'error': error_msg}
+                total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+                
+                api_logger.log_internal_request(
+                    endpoint='/api/dashboard/node-details',
+                    method='POST',
+                    request_data=request_data,
+                    response_data=error_response,
+                    status_code=response.status_code,
+                    duration_ms=total_duration_ms,
+                    client_ip=client_ip
+                )
+                
+                return jsonify(error_response), response.status_code
+                
+        except requests.exceptions.Timeout:
+            jarvis_duration_ms = (datetime.now() - jarvis_start_time).total_seconds() * 1000
+            error_msg = "Timeout while connecting to Jarvis API"
+            logger.error(error_msg)
+            
+            # Log timeout error
+            api_logger.log_jarvis_request(
+                url=jarvis_url,
+                method='GET',
+                params=params,
+                response_data=None,
+                status_code=None,
+                duration_ms=jarvis_duration_ms,
+                error=error_msg
+            )
+            
+            error_response = {'error': error_msg}
+            total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            api_logger.log_internal_request(
+                endpoint='/api/dashboard/node-details',
+                method='POST',
+                request_data=request_data,
+                response_data=error_response,
+                status_code=408,
+                duration_ms=total_duration_ms,
+                client_ip=client_ip
+            )
+            
+            return jsonify(error_response), 408
+            
+        except requests.exceptions.ConnectionError:
+            jarvis_duration_ms = (datetime.now() - jarvis_start_time).total_seconds() * 1000
+            error_msg = "Failed to connect to Jarvis API"
+            logger.error(error_msg)
+            
+            # Log connection error
+            api_logger.log_jarvis_request(
+                url=jarvis_url,
+                method='GET',
+                params=params,
+                response_data=None,
+                status_code=None,
+                duration_ms=jarvis_duration_ms,
+                error=error_msg
+            )
+            
+            error_response = {'error': error_msg}
+            total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            api_logger.log_internal_request(
+                endpoint='/api/dashboard/node-details',
+                method='POST',
+                request_data=request_data,
+                response_data=error_response,
+                status_code=503,
+                duration_ms=total_duration_ms,
+                client_ip=client_ip
+            )
+            
+            return jsonify(error_response), 503
+            
+    except Exception as e:
+        error_msg = f"Dashboard API error: {str(e)}"
+        logger.error(error_msg)
+        
+        # Log general error
+        total_duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+        error_response = {'error': error_msg}
+        
+        api_logger.log_internal_request(
+            endpoint='/api/dashboard/node-details',
+            method='POST',
+            request_data=request_data,
+            response_data=error_response,
+            status_code=500,
+            duration_ms=total_duration_ms,
+            client_ip=client_ip
+        )
+        
+        return jsonify(error_response), 500
+
+@app.route('/api/dashboard/api-logs', methods=['GET'])
+def dashboard_get_api_logs():
+    """Get recent API logs for monitoring"""
+    try:
+        log_type = request.args.get('type', 'all')  # all, internal, external
+        limit = int(request.args.get('limit', 20))
+        
+        logs = api_logger.get_recent_logs(log_type=log_type, limit=limit)
+        
+        return jsonify({
+            'success': True,
+            'logs': logs,
+            'total': len(logs),
+            'type': log_type
+        })
+        
+    except Exception as e:
+        logger.error(f"API logs error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/dashboard/cleanup-logs', methods=['POST'])
+def dashboard_cleanup_api_logs():
+    """Clean up old API logs"""
+    try:
+        data = request.get_json() or {}
+        days_to_keep = data.get('days_to_keep', 7)
+        
+        api_logger.cleanup_old_logs(days_to_keep=days_to_keep)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Cleaned up API logs older than {days_to_keep} days'
+        })
+        
+    except Exception as e:
+        logger.error(f"API logs cleanup error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/dashboard/test-logging', methods=['POST'])
+def dashboard_test_logging():
+    """Test API logging functionality"""
+    start_time = datetime.now()
+    request_data = request.get_json() or {}
+    client_ip = request.remote_addr
+    
+    try:
+        # Simulate some processing
+        import time
+        time.sleep(0.1)  # 100ms delay
+        
+        response_data = {
+            'success': True,
+            'message': 'API logging test successful',
+            'timestamp': datetime.now().isoformat(),
+            'request_data': request_data
+        }
+        
+        duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Log the API call
+        api_logger.log_internal_request(
+            endpoint='/api/dashboard/test-logging',
+            method='POST',
+            request_data=request_data,
+            response_data=response_data,
+            status_code=200,
+            duration_ms=duration_ms,
+            client_ip=client_ip
+        )
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        error_response = {'error': str(e)}
+        duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+        
+        api_logger.log_internal_request(
+            endpoint='/api/dashboard/test-logging',
+            method='POST',
+            request_data=request_data,
+            response_data=error_response,
+            status_code=500,
+            duration_ms=duration_ms,
+            client_ip=client_ip
+        )
+        
+        return jsonify(error_response), 500
+
+# ============================================================================
+# RDM API INTEGRATION ENDPOINTS
+# ============================================================================
+
+@app.route('/api/rdm/busy-resources', methods=['POST'])
+def rdm_get_busy_resources():
+    """Get busy resources from RDM API"""
+    start_time = datetime.now()
+    client_ip = request.remote_addr
+    
+    try:
+        request_data = request.get_json()
+        node_pool = request_data.get('node_pool', 'ncm_st')
+        limit = request_data.get('limit', 100)
+        node_ids = request_data.get('node_ids', [])
+        
+        if not node_ids:
+            return jsonify({'error': 'node_ids are required', 'success': False}), 400
+        
+        # Build RDM API URL
+        ids_param = ','.join(node_ids)
+        rdm_url = f"https://rdm.eng.nutanix.com/api/v1/busy_resources/nodes?node_pool={node_pool}&limit={limit}&ids={ids_param}"
+        
+        logger.info(f"Calling RDM API: {rdm_url}")
+        
+        # Make request to RDM API
+        response = requests.get(rdm_url, verify=False, timeout=600)
+        response.raise_for_status()
+        
+        rdm_data = response.json()
+        
+        duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Log external API call
+        api_logger.log_external_request(
+            url=rdm_url,
+            method='GET',
+            request_data=request_data,
+            response_data=rdm_data,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+            service_name="rdm"
+        )
+        
+        return jsonify({
+            'success': True,
+            'data': rdm_data.get('data', []),
+            'total': len(rdm_data.get('data', [])),
+            'node_pool': node_pool,
+            'requested_ids': node_ids
+        })
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"RDM API request failed: {str(e)}")
+        return jsonify({'error': f'RDM API request failed: {str(e)}', 'success': False}), 500
+    except Exception as e:
+        logger.error(f"Error in rdm_get_busy_resources: {str(e)}")
+        return jsonify({'error': 'Internal server error', 'success': False}), 500
+
+@app.route('/api/rdm/deployment-details', methods=['POST'])
+def rdm_get_deployment_details():
+    """Get deployment details from RDM API"""
+    start_time = datetime.now()
+    client_ip = request.remote_addr
+    
+    try:
+        request_data = request.get_json()
+        deployment_id = request_data.get('deployment_id')
+        
+        if not deployment_id:
+            return jsonify({'error': 'deployment_id is required', 'success': False}), 400
+        
+        # Build RDM deployment API URL
+        rdm_url = f"https://rdm.eng.nutanix.com/api/v1/deployments/{deployment_id}"
+        
+        logger.info(f"Calling RDM Deployment API: {rdm_url}")
+        
+        # Make request to RDM API
+        response = requests.get(rdm_url, verify=False, timeout=600)
+        response.raise_for_status()
+        
+        deployment_data = response.json()
+        
+        duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Log external API call
+        api_logger.log_external_request(
+            url=rdm_url,
+            method='GET',
+            request_data=request_data,
+            response_data=deployment_data,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+            service_name="rdm"
+        )
+        
+        return jsonify({
+            'success': True,
+            'data': deployment_data.get('data', {}),
+            'deployment_id': deployment_id
+        })
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"RDM Deployment API request failed: {str(e)}")
+        return jsonify({'error': f'RDM Deployment API request failed: {str(e)}', 'success': False}), 500
+    except Exception as e:
+        logger.error(f"Error in rdm_get_deployment_details: {str(e)}")
+        return jsonify({'error': 'Internal server error', 'success': False}), 500
 
 # ============================================================================
 # MAIN APPLICATION ENTRY POINT
