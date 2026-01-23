@@ -7099,6 +7099,19 @@ function renderNodeDetails(nodes) {
     nodeDeploymentMap = loadDeploymentMappings(poolId);
     console.log(`Loaded ${Object.keys(nodeDeploymentMap).length} deployment mappings for pool ${poolId}`);
     
+    // Debug: Show sample deployment mapping data
+    if (Object.keys(nodeDeploymentMap).length > 0) {
+        const sampleNode = Object.keys(nodeDeploymentMap)[0];
+        const sampleData = nodeDeploymentMap[sampleNode];
+        console.log(`Sample deployment data for ${sampleNode}:`, {
+            pe_ip: sampleData.pe_ip,
+            pc_ip: sampleData.pc_ip,
+            expires_at_formatted: sampleData.expires_at_formatted,
+            user_name: sampleData.user_name,
+            pe_version: sampleData.pe_version
+        });
+    }
+    
     // Populate filter options
     populateFilterOptions(nodes);
     
@@ -7420,15 +7433,106 @@ async function fetchRDMLinks() {
             return;
         }
         
-        // Step 2: Store deployment mappings and show results
-        console.log('RDM data retrieved successfully:', rdmData);
+        // Step 2: Extract deployment IDs and fetch detailed deployment info
+        const deploymentIds = rdmData.data
+            .map(item => item.scheduled_deployment_id)
+            .filter(id => id);
         
-        // Step 3: Store deployment IDs against node names
-        storeNodeDeploymentMapping(rdmData.data);
+        if (deploymentIds.length === 0) {
+            showToast('No deployment IDs found in RDM response', 'info');
+            return;
+        }
         
-        // Step 4: Display results
-        displayRDMResults(rdmData);
-        showToast(`Successfully fetched RDM data for ${rdmData.data.length} resources with deployment links`, 'success');
+        console.log('Fetching detailed deployment info for IDs:', deploymentIds);
+        
+        // Step 3: Fetch deployment details for each ID (like del.py logic)
+        const deploymentPromises = deploymentIds.map(async (deploymentId) => {
+            try {
+                const deploymentResponse = await fetch('/api/rdm/deployment-details', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        deployment_id: deploymentId
+                    })
+                });
+                
+                if (deploymentResponse.ok) {
+                    const deploymentData = await deploymentResponse.json();
+                    
+                    // Now fetch individual deployment details for each deployment in the deployments array
+                    // This is the key part from del.py logic
+                    const individualDeployments = [];
+                    if (deploymentData.data && deploymentData.data.deployments && Array.isArray(deploymentData.data.deployments)) {
+                        console.log(`Fetching ${deploymentData.data.deployments.length} individual deployments for ${deploymentId}`);
+                        
+                        const individualPromises = deploymentData.data.deployments.map(async (dep) => {
+                            const individualId = dep.$oid;
+                            try {
+                                const individualResponse = await fetch('/api/rdm/deployment-details', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        deployment_id: individualId,
+                                        individual_deployment: true
+                                    })
+                                });
+                                
+                                if (individualResponse.ok) {
+                                    const individualData = await individualResponse.json();
+                                    return {
+                                        deployment_id: individualId,
+                                        success: true,
+                                        data: individualData.data
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching individual deployment ${individualId}:`, error);
+                            }
+                            return null;
+                        });
+                        
+                        const individualResults = await Promise.all(individualPromises);
+                        individualDeployments.push(...individualResults.filter(r => r !== null));
+                    }
+                    
+                    return {
+                        deployment_id: deploymentId,
+                        success: true,
+                        data: deploymentData.data,
+                        individual_deployments: individualDeployments
+                    };
+                } else {
+                    return {
+                        deployment_id: deploymentId,
+                        success: false,
+                        error: `HTTP ${deploymentResponse.status}`
+                    };
+                }
+            } catch (error) {
+                return {
+                    deployment_id: deploymentId,
+                    success: false,
+                    error: error.message
+                };
+            }
+        });
+        
+        const deploymentResults = await Promise.all(deploymentPromises);
+        console.log('Deployment Results:', deploymentResults);
+        
+        // Step 4: Process deployment details to extract pe_ip, pc_ip, expires_at
+        const enhancedRdmData = processDeploymentDetails(rdmData.data, deploymentResults);
+        
+        // Step 5: Store enhanced deployment mappings
+        storeEnhancedNodeDeploymentMapping(enhancedRdmData);
+        
+        // Step 6: Display enhanced results
+        displayEnhancedRDMResults(enhancedRdmData);
+        showToast(`Successfully fetched enhanced RDM data for ${enhancedRdmData.length} resources with deployment details`, 'success');
         
     } catch (error) {
         console.error('Error fetching RDM links:', error);
@@ -7437,6 +7541,116 @@ async function fetchRDMLinks() {
         button.innerHTML = originalText;
         button.disabled = false;
     }
+}
+
+function processDeploymentDetails(rdmResources, deploymentResults) {
+    // Process deployment details similar to del.py logic
+    const enhancedData = [];
+    
+    rdmResources.forEach(resource => {
+        const deploymentResult = deploymentResults.find(d => d.deployment_id === resource.scheduled_deployment_id);
+        
+        if (deploymentResult && deploymentResult.success && deploymentResult.data) {
+            const deployment = deploymentResult.data;
+            const enhancedResource = { ...resource };
+            
+            // Extract pe_ip and pc_ip from individual deployment data (like del.py lines 6-14)
+            if (deploymentResult.individual_deployments && deploymentResult.individual_deployments.length > 0) {
+                console.log(`Processing ${deploymentResult.individual_deployments.length} individual deployments for ${deploymentResult.deployment_id}`);
+                
+                // Loop through individual deployments to find PE/PC IPs (like del.py lines 6-14)
+                deploymentResult.individual_deployments.forEach(individualDeployment => {
+                    if (individualDeployment.success && individualDeployment.data) {
+                        const indivData = individualDeployment.data;
+                        console.log(`Processing ${indivData.deployment_id} individual deployment for ${deploymentResult.deployment_id}`);
+                        console.log(`Individual deployment data:`, indivData.allocated_resource);
+                        // Check for "ScheduledDeployment does not exist" message (like del.py line 9-10)
+                        if (indivData.message && indivData.message === "ScheduledDeployment does not exist") {
+                            console.log(`Skipping deployment ${individualDeployment.deployment_id} - does not exist`);
+                            return;
+                        }
+                        
+                        // Extract PE IP from svm_ip (like del.py line 11-12)
+                        if (indivData.allocated_resource && indivData.allocated_resource.svm_ip) {
+                            enhancedResource.pe_ip = indivData.allocated_resource.svm_ip;
+                            console.log(`Found PE IP from individual deployment: ${enhancedResource.pe_ip}`);
+                        }
+                        
+                        // Extract PC IP from host (like del.py line 13-14)
+                        else if (indivData.allocated_resource && indivData.allocated_resource.host ) {
+                            enhancedResource.pc_ip = indivData.allocated_resource.host;
+                            console.log(`Found PC IP from individual deployment: ${enhancedResource.pc_ip}`);
+                        }
+                    }
+                });
+            }
+            
+            // Fallback: Try to extract from main deployment data if individual deployments didn't work
+            // if (!enhancedResource.pe_ip && !enhancedResource.pc_ip) {
+            //     if (deployment.allocated_resource && deployment.allocated_resource.svm_ip) {
+            //         enhancedResource.pe_ip = deployment.allocated_resource.svm_ip;
+            //         console.log(`Found PE IP from main deployment: ${enhancedResource.pe_ip}`);
+            //     }
+                
+            //     if (deployment.allocated_resource && deployment.allocated_resource.host) {
+            //         enhancedResource.pc_ip = deployment.allocated_resource.host;
+            //         console.log(`Found PC IP from main deployment: ${enhancedResource.pc_ip}`);
+            //     }
+            // }
+            
+            // Debug: Log what we found
+            console.log(`Final PE/PC IPs for ${deploymentResult.deployment_id}:`, {
+                pe_ip: enhancedResource.pe_ip,
+                pc_ip: enhancedResource.pc_ip,
+                had_individual_deployments: !!(deploymentResult.individual_deployments && deploymentResult.individual_deployments.length > 0)
+            });
+            
+            // Extract cluster name from payload.name (like del.py line 15)
+            if (deployment.payload && deployment.payload.name) {
+                enhancedResource.deployment_cluster_name = deployment.payload.name;
+            }
+            
+            // Extract user name from client.owner (like del.py line 16)
+            if (deployment.client && deployment.client.owner) {
+                enhancedResource.user_name = deployment.client.owner;
+            }
+            
+            // Extract pool from allocated_pool (like del.py line 17)
+            if (deployment.allocated_pool) {
+                enhancedResource.pool = deployment.allocated_pool;
+            }
+            
+            // Extract PE version from payload.resource_specs (like del.py lines 18-21)
+            if (deployment.payload && deployment.payload.resource_specs) {
+                deployment.payload.resource_specs.forEach(spec => {
+                    if (spec.software && spec.software.nos && spec.software.nos.version) {
+                        enhancedResource.pe_version = spec.software.nos.version;
+                    }
+                });
+            }
+            
+            // Extract expires_at (like del.json line 253-255)
+            if (deployment.expires_at) {
+                enhancedResource.expires_at = deployment.expires_at;
+                enhancedResource.expires_at_formatted = new Date(deployment.expires_at.$date).toLocaleString();
+            }
+            
+            // Add other useful deployment info
+            enhancedResource.deployment_status_detailed = deployment.status;
+            enhancedResource.deployment_message = deployment.message;
+            enhancedResource.deployment_percentage = deployment.percentage_complete;
+            enhancedResource.log_link = deployment.log_link;
+            enhancedResource.log_view = deployment.log_view;
+            
+            enhancedData.push(enhancedResource);
+        } else {
+            // Keep original resource if deployment details failed
+            enhancedData.push(resource);
+        }
+    });
+    
+    console.log('Enhanced RDM data with deployment details:', enhancedData);
+    return enhancedData;
 }
 
 function storeNodeDeploymentMapping(rdmResources) {
@@ -7481,8 +7695,64 @@ function storeNodeDeploymentMapping(rdmResources) {
     displayRDMResultsFromMappings();
 }
 
+function storeEnhancedNodeDeploymentMapping(enhancedRdmData) {
+    // Load existing mappings for current pool
+    const existingMappings = loadDeploymentMappings(currentPoolId || 'default');
+    nodeDeploymentMap = { ...existingMappings };
+    
+    // Map enhanced RDM data to node names
+    enhancedRdmData.forEach(resource => {
+        if (resource.node_id && resource.scheduled_deployment_id) {
+            // Find the corresponding node name from allNodes
+            const node = allNodes.find(n => 
+                (n._id && n._id.$oid === resource.node_id) || 
+                n.id === resource.node_id || 
+                n.uuid === resource.node_id
+            );
+            
+            if (node && node.name) {
+                nodeDeploymentMap[node.name] = {
+                    deployment_id: resource.scheduled_deployment_id,
+                    cluster_name: resource.cluster_name,
+                    deployment_status: resource.deployment_status,
+                    node_id: resource.node_id,
+                    lastUpdated: new Date().toISOString(),
+                    // Enhanced data from deployment details
+                    pe_ip: resource.pe_ip,
+                    pc_ip: resource.pc_ip,
+                    deployment_cluster_name: resource.deployment_cluster_name,
+                    user_name: resource.user_name,
+                    pool: resource.pool,
+                    pe_version: resource.pe_version,
+                    expires_at: resource.expires_at,
+                    expires_at_formatted: resource.expires_at_formatted,
+                    deployment_status_detailed: resource.deployment_status_detailed,
+                    deployment_message: resource.deployment_message,
+                    deployment_percentage: resource.deployment_percentage,
+                    log_link: resource.log_link,
+                    log_view: resource.log_view
+                };
+                console.log(`Enhanced mapping for node ${node.name}:`, nodeDeploymentMap[node.name]);
+            }
+        }
+    });
+    
+    // Save enhanced mappings to localStorage
+    saveDeploymentMappings(currentPoolId || 'default', nodeDeploymentMap);
+    
+    console.log('Enhanced node deployment mapping updated and saved:', nodeDeploymentMap);
+    
+    // Refresh the node grid to show enhanced deployment buttons
+    if (allNodes && allNodes.length > 0) {
+        applyFilters(); // This will re-render the grid with enhanced deployment buttons
+    }
+    
+    // Update the RDM Integration Results display with enhanced data
+    displayRDMResultsFromMappings();
+}
+
 function displayRDMResultsFromMappings() {
-    // Create RDM results from stored deployment mappings
+    // Create RDM results from stored deployment mappings with enhanced data
     const mappingEntries = Object.entries(nodeDeploymentMap);
     
     if (mappingEntries.length === 0) {
@@ -7490,26 +7760,39 @@ function displayRDMResultsFromMappings() {
         return;
     }
     
+    // Sort by cluster name before displaying
+    const sortedEntries = mappingEntries.sort(([nodeNameA, deploymentInfoA], [nodeNameB, deploymentInfoB]) => {
+        const clusterA = (deploymentInfoA.deployment_cluster_name || deploymentInfoA.cluster_name || 'N/A').toLowerCase();
+        const clusterB = (deploymentInfoB.deployment_cluster_name || deploymentInfoB.cluster_name || 'N/A').toLowerCase();
+        return clusterA.localeCompare(clusterB);
+    });
+    
+    console.log('Displaying RDM results from mappings with enhanced data:', nodeDeploymentMap);
+    
     let resultsHtml = `
         <div class="card-dark mt-3">
-            <h6><i class="bi bi-link-45deg"></i> RDM Integration Results (from stored mappings)</h6>
+            <h6><i class="bi bi-link-45deg"></i> Enhanced RDM Integration Results (from stored mappings)</h6>
             
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                 <table class="table table-sm table-dark">
                     <thead>
                         <tr>
                             <th>Node Name</th>
                             <th>Cluster Name</th>
+                            <th>PE IP</th>
+                            <th>PC IP</th>
+                            <th>User</th>
+                            <th>PE Version</th>
                             <th>Status</th>
-                            <th>Deployment ID</th>
+                            <th>Expires</th>
                             <th>RDM Link</th>
                         </tr>
                     </thead>
                     <tbody>
     `;
     
-    mappingEntries.forEach(([nodeName, deploymentInfo]) => {
-        const status = deploymentInfo.deployment_status || 'Unknown';
+    sortedEntries.forEach(([nodeName, deploymentInfo]) => {
+        const status = deploymentInfo.deployment_status_detailed || deploymentInfo.deployment_status || 'Unknown';
         const statusClass = status === 'SUCCESS' ? 'text-success' : 'text-warning';
         const deploymentId = deploymentInfo.deployment_id;
         const rdmLink = deploymentId ? `https://rdm.eng.nutanix.com/scheduled_deployments/${deploymentId}` : null;
@@ -7517,9 +7800,13 @@ function displayRDMResultsFromMappings() {
         resultsHtml += `
             <tr>
                 <td><strong>${nodeName}</strong></td>
-                <td><small>${deploymentInfo.cluster_name || 'N/A'}</small></td>
+                <td><small>${deploymentInfo.deployment_cluster_name || deploymentInfo.cluster_name || 'N/A'}</small></td>
+                <td><small class="text-info">${deploymentInfo.pe_ip ? `<a href="https://${deploymentInfo.pe_ip}:9440/" target="_blank" class="text-info text-decoration-none">${deploymentInfo.pe_ip}</a>` : 'N/A'}</small></td>
+                <td><small class="text-warning">${deploymentInfo.pc_ip ? `<a href="https://${deploymentInfo.pc_ip}:9440/" target="_blank" class="text-warning text-decoration-none">${deploymentInfo.pc_ip}</a>` : 'N/A'}</small></td>
+                <td><small>${deploymentInfo.user_name || 'N/A'}</small></td>
+                <td><small>${deploymentInfo.pe_version || 'N/A'}</small></td>
                 <td><span class="${statusClass}">${status}</span></td>
-                <td><small>${deploymentId || 'N/A'}</small></td>
+                <td><small>${deploymentInfo.expires_at_formatted || 'N/A'}</small></td>
                 <td>
                     ${rdmLink ? `
                         <a href="${rdmLink}" target="_blank" class="btn btn-xs btn-outline-warning" title="Open RDM Deployment">
@@ -7538,7 +7825,10 @@ function displayRDMResultsFromMappings() {
             
             <div class="mt-2 text-center">
                 <small class="text-muted">
-                    Showing ${mappingEntries.length} nodes with deployment mappings • 
+                    Found ${mappingEntries.length} nodes with deployment mappings • 
+                    ${mappingEntries.filter(([_, info]) => info.pe_ip).length} with PE IPs • 
+                    ${mappingEntries.filter(([_, info]) => info.pc_ip).length} with PC IPs • 
+                    ${mappingEntries.filter(([_, info]) => info.expires_at_formatted).length} with expiry dates • 
                     Last updated: ${nodeDeploymentMap[mappingEntries[0][0]]?.lastUpdated ? 
                         new Date(nodeDeploymentMap[mappingEntries[0][0]].lastUpdated).toLocaleString() : 'Unknown'}
                 </small>
@@ -7559,6 +7849,95 @@ function displayRDMResultsFromMappings() {
     nodeGrid.parentNode.insertBefore(resultsDiv, nodeGrid.nextSibling);
     
     console.log(`Displayed RDM results for ${mappingEntries.length} nodes from stored mappings`);
+}
+
+function displayEnhancedRDMResults(enhancedRdmData) {
+    // Sort by cluster name before displaying
+    const sortedData = enhancedRdmData.sort((a, b) => {
+        const clusterA = (a.deployment_cluster_name || a.cluster_name || 'N/A').toLowerCase();
+        const clusterB = (b.deployment_cluster_name || b.cluster_name || 'N/A').toLowerCase();
+        return clusterA.localeCompare(clusterB);
+    });
+    
+    // Create enhanced RDM results display with pe_ip, pc_ip, expires_at
+    let resultsHtml = `
+        <div class="card-dark mt-3">
+            <h6><i class="bi bi-link-45deg"></i> Enhanced RDM Integration Results</h6>
+            
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-sm table-dark">
+                    <thead>
+                        <tr>
+                            <th>Node ID</th>
+                            <th>Cluster Name</th>
+                            <th>PE IP</th>
+                            <th>PC IP</th>
+                            <th>User</th>
+                            <th>PE Version</th>
+                            <th>Status</th>
+                            <th>Expires</th>
+                            <th>RDM Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    sortedData.forEach(resource => {
+        const status = resource.is_free ? 'Free' : resource.deployment_status || 'Busy';
+        const statusClass = resource.is_free ? 'text-success' : 
+                           (resource.deployment_status === 'SUCCESS' ? 'text-success' : 'text-warning');
+        
+        const deploymentId = resource.scheduled_deployment_id;
+        const rdmLink = deploymentId ? `https://rdm.eng.nutanix.com/scheduled_deployments/${deploymentId}` : null;
+        
+        resultsHtml += `
+            <tr>
+                <td><small>${resource.node_id || 'N/A'}</small></td>
+                <td><small>${resource.deployment_cluster_name || resource.cluster_name || 'N/A'}</small></td>
+                <td><small class="text-info">${resource.pe_ip ? `<a href="https://${resource.pe_ip}:9440/" target="_blank" class="text-info text-decoration-none">${resource.pe_ip}</a>` : 'N/A'}</small></td>
+                <td><small class="text-warning">${resource.pc_ip ? `<a href="https://${resource.pc_ip}:9440/" target="_blank" class="text-warning text-decoration-none">${resource.pc_ip}</a>` : 'N/A'}</small></td>
+                <td><small>${resource.user_name || 'N/A'}</small></td>
+                <td><small>${resource.pe_version || 'N/A'}</small></td>
+                <td><span class="${statusClass}">${status}</span></td>
+                <td><small>${resource.expires_at_formatted || 'N/A'}</small></td>
+                <td>
+                    ${rdmLink ? `
+                        <a href="${rdmLink}" target="_blank" class="btn btn-xs btn-outline-warning" title="Open RDM Deployment">
+                            <i class="bi bi-link-45deg"></i> Open
+                        </a>
+                    ` : '<span class="text-muted">No Link</span>'}
+                </td>
+            </tr>
+        `;
+    });
+    
+    resultsHtml += `
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-2 text-center">
+                <small class="text-muted">
+                    Found ${enhancedRdmData.length} resources • 
+                    ${enhancedRdmData.filter(r => r.pe_ip).length} with PE IPs • 
+                    ${enhancedRdmData.filter(r => r.pc_ip).length} with PC IPs • 
+                    ${enhancedRdmData.filter(r => r.scheduled_deployment_id).length} with deployment links
+                </small>
+            </div>
+        </div>
+    `;
+    
+    // Insert results after the node grid
+    const nodeGrid = document.getElementById('nodeDetailsGrid');
+    let existingResults = document.getElementById('rdmResults');
+    if (existingResults) {
+        existingResults.remove();
+    }
+    
+    const resultsDiv = document.createElement('div');
+    resultsDiv.id = 'rdmResults';
+    resultsDiv.innerHTML = resultsHtml;
+    nodeGrid.parentNode.insertBefore(resultsDiv, nodeGrid.nextSibling);
 }
 
 function displayRDMResults(rdmData) {
@@ -8048,15 +8427,144 @@ function getDeploymentButton(nodeName) {
     if (deploymentInfo && deploymentInfo.deployment_id) {
         const deploymentUrl = `https://rdm.eng.nutanix.com/scheduled_deployments/${deploymentInfo.deployment_id}`;
         console.log(`Creating deployment button for ${nodeName} with URL: ${deploymentUrl}`);
+        const hasEnhancedData = deploymentInfo.pe_ip || deploymentInfo.pc_ip;
+        const buttonClass = hasEnhancedData ? 'btn-warning' : 'btn-outline-warning';
+        const title = hasEnhancedData ? 
+            `Enhanced Deployment: ${deploymentInfo.deployment_id}\nPE IP: ${deploymentInfo.pe_ip || 'N/A'}\nPC IP: ${deploymentInfo.pc_ip || 'N/A'}` :
+            `View Deployment: ${deploymentInfo.deployment_id}`;
+        
         return `
-            <button class="btn btn-sm btn-outline-warning" onclick="openDeploymentLink('${deploymentUrl}')" title="View Deployment: ${deploymentInfo.deployment_id}">
-                <i class="bi bi-link-45deg"></i>
+            <button class="btn btn-sm ${buttonClass}" onclick="openDeploymentLink('${deploymentUrl}')" title="${title}">
+                <i class="bi bi-link-45deg"></i> ${hasEnhancedData ? 'Enhanced' : 'RDM'}
             </button>
         `;
     }
     
     console.log(`No deployment button for ${nodeName} - no deployment info found`);
     return ''; // No deployment button if no deployment ID
+}
+
+function getEnhancedDeploymentInfo(nodeName) {
+    const deploymentInfo = nodeDeploymentMap[nodeName];
+    
+    if (deploymentInfo && (deploymentInfo.pe_ip || deploymentInfo.pc_ip || deploymentInfo.expires_at_formatted)) {
+        return `
+            <div class="mt-2 p-2 bg-dark rounded border border-secondary">
+                <small class="text-muted d-block mb-1"><i class="bi bi-server"></i> Deployment Details:</small>
+                ${deploymentInfo.pe_ip ? `<div class="text-info small"><strong>PE IP:</strong> ${deploymentInfo.pe_ip}</div>` : ''}
+                ${deploymentInfo.pc_ip ? `<div class="text-warning small"><strong>PC IP:</strong> ${deploymentInfo.pc_ip}</div>` : ''}
+                ${deploymentInfo.pe_version ? `<div class="text-success small"><strong>Version:</strong> ${deploymentInfo.pe_version}</div>` : ''}
+                ${deploymentInfo.user_name ? `<div class="text-light small"><strong>Owner:</strong> ${deploymentInfo.user_name}</div>` : ''}
+                ${deploymentInfo.expires_at_formatted ? `<div class="text-danger small"><strong>Expires:</strong> ${deploymentInfo.expires_at_formatted}</div>` : ''}
+                ${deploymentInfo.deployment_status_detailed ? `<div class="text-success small"><strong>Status:</strong> ${deploymentInfo.deployment_status_detailed}</div>` : ''}
+            </div>
+        `;
+    }
+    
+    return ''; // No enhanced info if no deployment details
+}
+
+function getEnhancedDeploymentModalInfo(nodeName) {
+    const deploymentInfo = nodeDeploymentMap[nodeName];
+    
+    if (deploymentInfo && deploymentInfo.deployment_id) {
+        return `
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h6 class="text-warning"><i class="bi bi-link-45deg"></i> Enhanced RDM Deployment Info</h6>
+                    <div class="card bg-secondary">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Deployment ID:</strong><br>
+                                    <code>${deploymentInfo.deployment_id}</code>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Status:</strong><br>
+                                    <span class="badge ${deploymentInfo.deployment_status_detailed === 'SUCCESS' ? 'bg-success' : 'bg-warning'}">${deploymentInfo.deployment_status_detailed || 'Unknown'}</span>
+                                </div>
+                            </div>
+                            
+                            ${deploymentInfo.pe_ip || deploymentInfo.pc_ip ? `
+                            <div class="row mt-2">
+                                ${deploymentInfo.pe_ip ? `
+                                <div class="col-md-6">
+                                    <strong class="text-info">PE IP:</strong><br>
+                                    <code class="text-info"><a href="https://${deploymentInfo.pe_ip}:9440/" target="_blank" class="text-info text-decoration-none">${deploymentInfo.pe_ip}</a></code>
+                                </div>
+                                ` : ''}
+                                ${deploymentInfo.pc_ip ? `
+                                <div class="col-md-6">
+                                    <strong class="text-warning">PC IP:</strong><br>
+                                    <code class="text-warning"><a href="https://${deploymentInfo.pc_ip}:9440/" target="_blank" class="text-warning text-decoration-none">${deploymentInfo.pc_ip}</a></code>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ` : ''}
+                            
+                            ${deploymentInfo.user_name || deploymentInfo.pe_version ? `
+                            <div class="row mt-2">
+                                ${deploymentInfo.user_name ? `
+                                <div class="col-md-6">
+                                    <strong>Owner:</strong><br>
+                                    ${deploymentInfo.user_name}
+                                </div>
+                                ` : ''}
+                                ${deploymentInfo.pe_version ? `
+                                <div class="col-md-6">
+                                    <strong>PE Version:</strong><br>
+                                    <code class="text-success">${deploymentInfo.pe_version}</code>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ` : ''}
+                            
+                            ${deploymentInfo.expires_at_formatted ? `
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <strong class="text-danger">Expires At:</strong><br>
+                                    <span class="text-danger">${deploymentInfo.expires_at_formatted}</span>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${deploymentInfo.deployment_message ? `
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <strong>Message:</strong><br>
+                                    <small class="text-muted">${deploymentInfo.deployment_message}</small>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="mt-3 d-flex gap-2">
+                                <a href="https://rdm.eng.nutanix.com/scheduled_deployments/${deploymentInfo.deployment_id}" 
+                                   target="_blank" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-box-arrow-up-right"></i> Open in RDM
+                                </a>
+                                ${deploymentInfo.log_link ? `
+                                <a href="${deploymentInfo.log_link}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-file-text"></i> View Logs
+                                </a>
+                                ` : ''}
+                                ${deploymentInfo.log_view ? `
+                                <a href="${deploymentInfo.log_view}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> Log View
+                                </a>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">Last Updated: ${deploymentInfo.lastUpdated ? new Date(deploymentInfo.lastUpdated).toLocaleString() : 'N/A'}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    return ''; // No enhanced info if no deployment details
 }
 
 function openDeploymentLink(url) {
@@ -8283,6 +8791,8 @@ function createNodeCard(node) {
                         <i class="bi bi-eye"></i> Details
                     </button>
                     ${getDeploymentButton(nodeName)}
+                </div>
+                ${getEnhancedDeploymentInfo(nodeName)}
                     <button class="btn btn-sm btn-outline-secondary" onclick="refreshSingleNode('${nodeId}')">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -8547,6 +9057,8 @@ function showNodeDetailModal(node) {
                             </div>
                         </div>
                         ` : ''}
+                        
+                        ${getEnhancedDeploymentModalInfo(node.name)}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

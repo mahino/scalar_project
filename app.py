@@ -1848,7 +1848,7 @@ def rdm_get_busy_resources():
         logger.info(f"Calling RDM API: {rdm_url}")
         
         # Make request to RDM API
-        response = requests.get(rdm_url, verify=False, timeout=600)
+        response = requests.get(rdm_url, verify=False)
         response.raise_for_status()
         
         rdm_data = response.json()
@@ -1890,14 +1890,18 @@ def rdm_get_deployment_details():
     try:
         request_data = request.get_json()
         deployment_id = request_data.get('deployment_id')
+        individual_deployment = request_data.get('individual_deployment', False)
         
         if not deployment_id:
             return jsonify({'error': 'deployment_id is required', 'success': False}), 400
         
         # Build RDM deployment API URL
-        rdm_url = f"https://rdm.eng.nutanix.com/api/v1/deployments/{deployment_id}"
+        if individual_deployment:
+            rdm_url = f"https://rdm.eng.nutanix.com/api/v1/deployments/{deployment_id}"
+        else:
+            rdm_url = f"https://rdm.eng.nutanix.com/api/v1/scheduled_deployments/{deployment_id}"
         
-        logger.info(f"Calling RDM Deployment API: {rdm_url}")
+        logger.info(f"Calling RDM Deployment API: {rdm_url}\nIndividual Deployment: {individual_deployment}")
         
         # Make request to RDM API
         response = requests.get(rdm_url, verify=False, timeout=600)

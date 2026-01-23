@@ -1,395 +1,258 @@
-
-https://rdm.eng.nutanix.com/api/v1/busy_resources/nodes?node_pool=ncm_st&limit=33&ids=681a34a89627e50e7d961832,681a34a89627e50e7d961831
 {
-  "data": [
-      {
-          "cluster_ip": "10.46.209.135",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_shashi_kiran_f65bc645cb98",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a58c5d0ab4099412324bd",
-          "scheduled_deployment_id": "68db9ee17298f65bc645cb97",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68dba26d4dd19280dd1094d3",
-          "deployment_id": "68db9ee17298f65bc645cb98",
-          "deployment_status": "SUCCESS"
+  "data": {
+      "comment": "",
+      "migrated": false,
+      "allocated_at": {
+          "$date": 1759482932658
       },
-      {
-          "cluster_ip": "10.46.211.66",
-          "is_free": false,
-          "cluster_name": "ncm20_aiops_st_host_pe_4N",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5b536df4460be10c46f52af2",
-          "scheduled_deployment_id": "68d64a1236023631a9e2c5e4",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68d64c7e9627e5e390e3b9de",
-          "deployment_id": "68d64a1236023631a9e2c5e5",
-          "deployment_status": "SUCCESS"
+      "release_assigned_to": "prod",
+      "deploy_time": 3361.967,
+      "updated_at": {
+          "$date": 1768799143261
       },
-      {
-          "cluster_ip": "10.46.208.54",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_bhavani_shankar_f63f1435bec9",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5af0ff42460be1e67c406bf9",
-          "scheduled_deployment_id": "68f86d087298f63f1435bec8",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68f86d434dd192e17be9ce20",
-          "deployment_id": "68f86d087298f63f1435bec9",
-          "deployment_status": "SUCCESS"
+      "completed_at": {
+          "$date": 1759486467871
       },
-      {
-          "cluster_ip": "10.46.208.53",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_bhavani_shankar_e918d7c3ec49",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5af0ff42460be1e67c406bf8",
-          "scheduled_deployment_id": "68f86cf792fce918d7c3ec48",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68f86e849627e53345636414",
-          "deployment_id": "68f86cf792fce918d7c3ec49",
-          "deployment_status": "SUCCESS"
+      "retain_resources_on_failure": false,
+      "max_wait_time_till_allocation": 48,
+      "duration": 3960,
+      "message": "Deployment Completed.",
+      "payload": {
+          "comment": "",
+          "retry": 0,
+          "name": "PE_longevity",
+          "tags": [
+              "shashi_kiran"
+          ],
+          "duration": 720,
+          "permanent_setup": false,
+          "max_wait_time_till_allocation": 48,
+          "client_timezone_offset": -330,
+          "resource_specs": [
+              {
+                  "use_foundation_vm": false,
+                  "diskless_cvm": false,
+                  "is_new": true,
+                  "hardware": {
+                      "cluster_min_nodes": 1,
+                      "svm_num_vcpus": 8,
+                      "all_flash_cluster": "Default",
+                      "preferred_nodes": [
+                          "mandalorian02-2"
+                      ],
+                      "min_host_gb_ram": 20,
+                      "svm_gb_ram": 20
+                  },
+                  "enable_large_partitions": false,
+                  "use_fast_foundation": false,
+                  "rdma_passthrough": false,
+                  "network": {
+                      "subnet_local": true,
+                      "dc_local": true
+                  },
+                  "register_to_global_pc": true,
+                  "enable_ipv6_on_imaging": false,
+                  "static_ips": [
+                      {
+                          "num_ips": 0,
+                          "continuous": true
+                      }
+                  ],
+                  "reset_boot_order": false,
+                  "set_external_data_services_ip_address": true,
+                  "base_cluster_params": {
+                      "is_nested_base_cluster": false,
+                      "exclusive_for": [
+                          "NESTED_AHV_1"
+                      ]
+                  },
+                  "set_cluster_external_ip_address": true,
+                  "type": "$NOS_CLUSTER",
+                  "resources": {
+                      "entries": [
+                          "ncm_st"
+                      ],
+                      "type": "node_pool",
+                      "infra": {
+                          "kind": "ON_PREM"
+                      }
+                  },
+                  "image_with_ipv6": false,
+                  "dod_config": {
+                      "allow_nutanix_for_sudo_exec": false,
+                      "enable": false,
+                      "enable_ahv_nutant_user": false,
+                      "enable_sudo_restriction": false
+                  },
+                  "ssh_config": {
+                      "restricted_shell_support": false
+                  },
+                  "enable_lacp": false,
+                  "enable_network_segmentation": false,
+                  "register_prism_to_vcenter": false,
+                  "datacenter": {
+                      "use_host_names": true
+                  },
+                  "image_resource": true,
+                  "name": "PE3_longevity",
+                  "auto_generate_cluster_name": false,
+                  "software": {
+                      "hypervisor": {
+                          "license_coupon": "public",
+                          "version": "branch_symlink",
+                          "type": "ahv",
+                          "license_kind": "any"
+                      },
+                      "nos": {
+                          "version": "ganges-7.5-stable",
+                          "redundancy_factor": "default",
+                          "build_type": "release"
+                      }
+                  }
+              }
+          ]
       },
-      {
-          "node_id": "55f94bfa7e6e2128055a6ed8",
-          "is_free": true
+      "expiry_mail_sent": false,
+      "demo_mode": false,
+      "log_link": "http://10.41.24.115:9000/scheduled_deployments/2025-10-03/68df93dc7298f65123e5c222/",
+      "skip_reuse": false,
+      "retry": 0,
+      "spec_translated": true,
+      "spec_version": 2,
+      "created_by": {
+          "$oid": "5ad6ef5e460be1ad1a99940c"
       },
-      {
-          "cluster_ip": "10.117.65.133",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_jacky_chu_4fff69f65bbe",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "646f21099627e53f7ab75602",
-          "scheduled_deployment_id": "6643bb3482e14fff69f65bbd",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "6643bbb69627e5c2beed8646",
-          "deployment_id": "6643bb3482e14fff69f65bbe",
-          "deployment_status": "SUCCESS"
+      "deployments": [
+          {
+              "$oid": "68df93dc7298f65123e5c223"
+          }
+      ],
+      "wait_time": 88.039,
+      "permanent_setup": false,
+      "DEPLOY_deployer_retry_count": 0,
+      "credit_allocation_required": false,
+      "extended_durations": [
+          {
+              "extension_time": 120,
+              "extended_at": {
+                  "$date": 1761191326449
+              }
+          },
+          {
+              "extension_time": 120,
+              "extended_at": {
+                  "$date": 1761804731114
+              }
+          },
+          {
+              "extension_time": 120,
+              "extended_at": {
+                  "$date": 1762249118982
+              }
+          },
+          {
+              "extension_time": 720,
+              "extended_at": {
+                  "$date": 1762410247565
+              }
+          },
+          {
+              "extension_time": 720,
+              "extended_at": {
+                  "$date": 1765536978255
+              }
+          },
+          {
+              "extension_time": 720,
+              "extended_at": {
+                  "$date": 1766991918856
+              }
+          },
+          {
+              "extension_time": 720,
+              "extended_at": {
+                  "$date": 1768799143261
+              }
+          }
+      ],
+      "percentage_complete": 100.0,
+      "status": "SUCCESS",
+      "client_ip": "10.138.237.215",
+      "hash": "jZVmvAMce3HJrSM40Oj1nnD9IzvC0eqye46MXkg1cbA=",
+      "updated_by": {
+          "$oid": "5919ab2dfcf8c20748a0a795"
       },
-      {
-          "cluster_ip": "10.117.65.133",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_jacky_chu_4fff69f65bbe",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "646fd38c9627e593161545a9",
-          "scheduled_deployment_id": "6643bb3482e14fff69f65bbd",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "6643bbb69627e5c2beed8646",
-          "deployment_id": "6643bb3482e14fff69f65bbe",
-          "deployment_status": "SUCCESS"
+      "tags": [
+          "prod",
+          "shashi_kiran",
+          "rdm__py3__$NOS_CLUSTER",
+          "rdm__py3__$LTSS",
+          "rdm__py3__$SELENIUM_VM"
+      ],
+      "is_active": true,
+      "log_server": "10.41.24.115:9000",
+      "expires_at": {
+          "$date": 1773742467871
       },
-      {
-          "cluster_ip": "10.46.209.135",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_shashi_kiran_f65bc645cb98",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a58c5d0ab4099412324bf",
-          "scheduled_deployment_id": "68db9ee17298f65bc645cb97",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68dba26d4dd19280dd1094d3",
-          "deployment_id": "68db9ee17298f65bc645cb98",
-          "deployment_status": "SUCCESS"
+      "is_reimaging_deployment": false,
+      "dispatcher_id": {
+          "$oid": "5c83c63073101afb754df95f"
       },
-      {
-          "cluster_ip": "10.122.44.209",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_manojkumar_singhal_f60035e1402e",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "6683c3534dd1929457ed9f19",
-          "scheduled_deployment_id": "68db6e7e7298f60035e1402d",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68db6f6d4dd19280d6f2704c",
-          "deployment_id": "68db6e7e7298f60035e1402e",
-          "deployment_status": "SUCCESS"
+      "deployed_at": {
+          "$date": 1759486467871
       },
-      {
-          "cluster_ip": "10.46.208.53",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_bhavani_shankar_e918d7c3ec49",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5af0ff41460be1e67c406bf7",
-          "scheduled_deployment_id": "68f86cf792fce918d7c3ec48",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68f86e849627e53345636414",
-          "deployment_id": "68f86cf792fce918d7c3ec49",
-          "deployment_status": "SUCCESS"
+      "allocated_pool": "ncm_st",
+      "cycle": 10,
+      "log_view": "http://rdm.eng.nutanix.com/drill_view/68df93dc7298f65123e5c222",
+      "stages": [
+          "PENDING",
+          "REQUESTING_RESOURCES",
+          "PROVISIONING_RESOURCES",
+          "UPDATING_DEPLOYMENTS_WITH_ALLOCATED_RESOURCES",
+          "UPDATED_DEPLOYMENTS_WITH_ALLOCATED_RESOURCES",
+          "RESOURCES_ALLOCATED",
+          "PROCESSING",
+          "DEPLOYER_CONTAINER_CREATED",
+          "ORCHESTRATING_PLUGIN_DEPLOYMENTS",
+          "SUCCESS"
+      ],
+      "locked": true,
+      "name": "PE_longevity",
+      "created_at": {
+          "$date": 1759482844619
       },
-      {
-          "cluster_ip": "10.46.209.101",
-          "is_free": false,
-          "cluster_name": "homepc_NCM2.0_longevity",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a574fd0ab4030c9e94668",
-          "scheduled_deployment_id": "68dcf202360236e8488aa6c4",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68dcf4b89627e5d8583590ff",
-          "deployment_id": "68dcf202360236e8488aa6c5",
-          "deployment_status": "SUCCESS"
+      "license_allocation_required": false,
+      "client_timezone_offset": -330,
+      "locking_statistics": [
+          {
+              "performed_at": {
+                  "$date": 1759820750997
+              },
+              "performed_by": {
+                  "$oid": "5ad6ef5e460be1ad1a99940c"
+              },
+              "type": "lock"
+          }
+      ],
+      "client": {
+          "owner": "shashi.kiran"
       },
-      {
-          "cluster_ip": "10.46.209.135",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_shashi_kiran_f65bc645cb98",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a58c5d0ab4099412324c3",
-          "scheduled_deployment_id": "68db9ee17298f65bc645cb97",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68dba26d4dd19280dd1094d3",
-          "deployment_id": "68db9ee17298f65bc645cb98",
-          "deployment_status": "SUCCESS"
+      "docker": {
+          "DEPLOY": {
+              "subnet": "phx_prod_release",
+              "name": "deployer_68df93dc7298f65123e5c222_1759482933",
+              "manager_ip": "tcp://10.41.42.38:2375",
+              "container_id": "wkxn8d6c1ox6kmfn57mfeyj9o",
+              "container_type": "deployer",
+              "RDM_DEPLOYER__IDEMPOTENT_ID": "b7494ee3-f2e5-4fc3-8545-edbe0de9f5841759482933",
+              "removed_at": {
+                  "$date": 1759486709884
+              }
+          }
       },
-      {
-          "cluster_ip": "10.46.209.136",
-          "is_free": false,
-          "cluster_name": "ncm_st_aiops_sqlvm_host_pe",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a58c5d0ab4099412324c1",
-          "scheduled_deployment_id": "691639197298f6c9c1c0be0f",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "691639799627e5d09681512a",
-          "deployment_id": "691639197298f6c9c1c0be10",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.211.66",
-          "is_free": false,
-          "cluster_name": "ncm20_aiops_st_host_pe_4N",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5b538c97460be149f70ba580",
-          "scheduled_deployment_id": "68d64a1236023631a9e2c5e4",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68d64c7e9627e5e390e3b9de",
-          "deployment_id": "68d64a1236023631a9e2c5e5",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.209.100",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e9821163336f",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a574fd0ab4030c9e94662",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddc9627e5661abef870",
-          "deployment_id": "681d9d6b92fce9821163336f",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.209.100",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e9821163336f",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a574fd0ab4030c9e94664",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddc9627e5661abef870",
-          "deployment_id": "681d9d6b92fce9821163336f",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.211.66",
-          "is_free": false,
-          "cluster_name": "ncm20_aiops_st_host_pe_4N",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5b538c96460be149f70ba57e",
-          "scheduled_deployment_id": "68d64a1236023631a9e2c5e4",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68d64c7e9627e5e390e3b9de",
-          "deployment_id": "68d64a1236023631a9e2c5e5",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.211.66",
-          "is_free": false,
-          "cluster_name": "ncm20_aiops_st_host_pe_4N",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5b538c96460be149f70ba57f",
-          "scheduled_deployment_id": "68d64a1236023631a9e2c5e4",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68d64c7e9627e5e390e3b9de",
-          "deployment_id": "68d64a1236023631a9e2c5e5",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.117.65.133",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_jacky_chu_4fff69f65bbe",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "646f21769627e53f7bf0d424",
-          "scheduled_deployment_id": "6643bb3482e14fff69f65bbd",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "6643bbb69627e5c2beed8646",
-          "deployment_id": "6643bb3482e14fff69f65bbe",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.117.65.133",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_jacky_chu_4fff69f65bbe",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "646f21769627e53f7bf0d425",
-          "scheduled_deployment_id": "6643bb3482e14fff69f65bbd",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "6643bbb69627e5c2beed8646",
-          "deployment_id": "6643bb3482e14fff69f65bbe",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.117.159",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e98211633371",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "681a34a89627e50e7d96182f",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddc4dd1926ea3ca94bc",
-          "deployment_id": "681d9d6b92fce98211633371",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.208.53",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_bhavani_shankar_e918d7c3ec49",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5af0ff41460be1e67c406bf6",
-          "scheduled_deployment_id": "68f86cf792fce918d7c3ec48",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68f86e849627e53345636414",
-          "deployment_id": "68f86cf792fce918d7c3ec49",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.117.108",
-          "is_free": false,
-          "cluster_name": "PE1_longevity",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "67c20e369627e5360ab57a8f",
-          "scheduled_deployment_id": "68dcf27f7298f6b5c8b23588",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68dcf66b9627e5d85973bd57",
-          "deployment_id": "68dcf27f7298f6b5c8b23589",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.209.135",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_shashi_kiran_f65bc645cb98",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a5c6ad0ab405f713504f3",
-          "scheduled_deployment_id": "68db9ee17298f65bc645cb97",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "68dba26d4dd19280dd1094d3",
-          "deployment_id": "68db9ee17298f65bc645cb98",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.122.45.8",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_bhavani_shankar_e918e3142009",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "66bd2faf9627e55cc1c3749d",
-          "scheduled_deployment_id": "68f86d1292fce918e3142008",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68f86d434dd192e186610d40",
-          "deployment_id": "68f86d1292fce918e3142009",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.112.102.170",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_paul_guo_e9a58ac95e9f",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "65ea3cfa9627e568e149d626",
-          "scheduled_deployment_id": "693cf21992fce9a58ac95e9e",
-          "scheduled_deployment_locked": false,
-          "cluster_id": "693cf7ae9627e5459ba4dd18",
-          "deployment_id": "693cf21a92fce9a58ac95e9f",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.122.44.173",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_manojkumar_singhal_362f347ea791",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "6687bfd49627e51a37fe7f69",
-          "scheduled_deployment_id": "68db6df13602362f347ea790",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68db6e389627e55eaf45f046",
-          "deployment_id": "68db6df13602362f347ea791",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.112.102.168",
-          "is_free": false,
-          "cluster_name": "NCM2.0_longevity",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "65ea3cfa9627e568e149d624",
-          "scheduled_deployment_id": "68dcf2d17298f6b5cb2a7cac",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68dcf4714dd192babef61ff3",
-          "deployment_id": "68dcf2d17298f6b5cb2a7cad",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.117.162",
-          "is_free": false,
-          "cluster_name": "PE2_longevity",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "681a34a89627e50e7d961832",
-          "scheduled_deployment_id": "68dcf3167298f6b5d750c848",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68dcf4b54dd192bab6c3f177",
-          "deployment_id": "68dcf3167298f6b5d750c849",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.117.161",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e98211633373",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "681a34a89627e50e7d961831",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddd9627e56617c00142",
-          "deployment_id": "681d9d6b92fce98211633373",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.117.160",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e98211633372",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "681a34a89627e50e7d961830",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddc9627e566020dd033",
-          "deployment_id": "681d9d6b92fce98211633372",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.46.209.100",
-          "is_free": false,
-          "cluster_name": "auto_cluster_prod_kodumuri_sowjanya_e9821163336f",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "5a5a574fd0ab4030c9e94666",
-          "scheduled_deployment_id": "681d9d6b92fce9821163336e",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "681d9ddc9627e5661abef870",
-          "deployment_id": "681d9d6b92fce9821163336f",
-          "deployment_status": "SUCCESS"
-      },
-      {
-          "cluster_ip": "10.117.65.78",
-          "is_free": false,
-          "cluster_name": "PE3_longevity",
-          "scheduled_deployment_status": "SUCCESS",
-          "node_id": "646f20204dd1926213803f28",
-          "scheduled_deployment_id": "68df93dc7298f65123e5c222",
-          "scheduled_deployment_locked": true,
-          "cluster_id": "68df94349627e56b6e4cfd81",
-          "deployment_id": "68df93dc7298f65123e5c223",
-          "deployment_status": "SUCCESS"
+      "_id": {
+          "$oid": "68df93dc7298f65123e5c222"
       }
-  ],
+  },
   "success": true
 }

@@ -1,89 +1,360 @@
 {
   "data": {
+      "allocated_at": {
+          "$date": 1759482932658
+      },
       "updated_at": {
-          "$date": 1759299650575
+          "$date": 1759486437742
       },
       "completed_at": {
-          "$date": 1759233015245
+          "$date": 1759486437693
       },
-      "message": "Registration Successful.",
+      "message": "Cluster Successfully created.",
       "started_at": {
-          "$date": 1759232954748
+          "$date": 1759482938698
       },
       "demo_mode": false,
-      "log_link": "http://10.41.24.115:9000/scheduled_deployments/2025-09-30/68db9ee17298f65bc645cb97/deployments/68db9ee17298f65bc645cb9a/",
+      "log_link": "http://10.41.24.115:9000/scheduled_deployments/2025-10-03/68df93dc7298f65123e5c222/deployments/68df93dc7298f65123e5c223/",
       "retry": 0,
       "spec_translated": true,
       "created_by": {
-          "$oid": "67f82f1b36023627b2aa0fa0"
+          "$oid": "5ad6ef5e460be1ad1a99940c"
       },
+      "percentage_complete": 100.0,
+      "allocated_nodes": [
+          {
+              "$oid": "646f20204dd1926213803f28"
+          }
+      ],
       "permanent_setup": false,
       "params": {
-          "dependencies": [],
-          "type": "$REGISTER_PE_PC",
+          "use_foundation_vm": false,
+          "diskless_cvm": false,
+          "ip": null,
           "is_new": true,
+          "sd_configs": {
+              "identical_configs": {
+                  "hardware_model": [],
+                  "gpu_model": [],
+                  "vlan": []
+              }
+          },
+          "hardware": {
+              "compute_nodes": {
+                  "models": [],
+                  "min_count": null,
+                  "nodes": []
+              },
+              "must_run_on_hardware_models": [],
+              "storage_nodes": {
+                  "models": [],
+                  "min_count": null,
+                  "nodes": []
+              },
+              "block_local": null,
+              "gpu_nodes": {
+                  "models": [],
+                  "min_count": null,
+                  "identical_models": true
+              },
+              "min_host_gb_ram": 20,
+              "min_host_cpu_cores": null,
+              "custom_tags": null,
+              "svm_num_vcpus": 8,
+              "min_node_hdd_capacity": null,
+              "identical_nodes": null,
+              "min_hdd_count_per_node": null,
+              "min_ssd_capacity": null,
+              "min_host_nics": null,
+              "cluster_min_nodes": 1,
+              "cluster_max_nodes": null,
+              "rack_local": false,
+              "identical_host_ram": false,
+              "all_flash_cluster": "default",
+              "min_ssd_count_per_node": null,
+              "blacklisted_hardware_models": [],
+              "min_node_ssd_capacity": null,
+              "max_ssd_count_per_node": null,
+              "preferred_nodes": [
+                  "mandalorian02-2"
+              ],
+              "host_ram_variation_threshold_gb": 0,
+              "svm_gb_ram": 20
+          },
+          "enable_large_partitions": false,
+          "lacp_bond_rate": "fast",
+          "lacp_bond_mode": "dynamic",
+          "use_fast_foundation": false,
+          "rdma_passthrough": false,
+          "network": {
+              "dns_server_list": null,
+              "ntp_server_list": null,
+              "subnet_local": true,
+              "lab": null,
+              "dc_local": true
+          },
+          "zone": null,
+          "enable_ipv6_on_imaging": false,
+          "static_ips": null,
+          "reset_boot_order": false,
+          "set_external_data_services_ip_address": true,
+          "base_cluster_params": {
+              "is_nested_base_cluster": false,
+              "exclusive_for": [
+                  "NESTED_AHV_1"
+              ]
+          },
+          "foundation_build_url": null,
+          "set_cluster_external_ip_address": true,
+          "type": "$NOS_CLUSTER",
+          "resources": {
+              "entries": [
+                  "ncm_st"
+              ],
+              "type": "node_pool",
+              "infra": {
+                  "kind": "ON_PREM"
+              }
+          },
+          "image_with_ipv6": false,
+          "nested_params": {},
+          "tags": [],
+          "dod_config": {
+              "allow_nutanix_for_sudo_exec": false,
+              "enable": false,
+              "bootloader_password": null,
+              "enable_ahv_nutant_user": false,
+              "enable_sudo_restriction": false
+          },
+          "ssh_config": {
+              "whitelisted_ips": [],
+              "user_specified_ssh_key_id": null,
+              "restricted_shell_support": false
+          },
+          "enable_lacp": false,
+          "enable_network_segmentation": false,
+          "image_if_spec_dont_match": null,
+          "register_prism_to_vcenter": false,
+          "dependencies": [],
           "rdm_passthrough": false,
-          "name": "REGISTER_PE_PC_13881"
+          "skip_virtual_ip": false,
+          "credentials": {
+              "prism_username": null,
+              "host_username": null,
+              "host_admin_username": null,
+              "other_configs": {
+                  "lockdown_mode": false,
+                  "restricted_shell_mode": "default",
+                  "ssh_using_password": true
+              },
+              "cvm_password": null,
+              "cvm_username": null,
+              "prism_password": null,
+              "host_password": null,
+              "host_asymmetric_key": null,
+              "host_admin_password": null,
+              "cvm_asymmetric_key": null
+          },
+          "foundation_vm_ip": null,
+          "datacenter": {
+              "hyperv": {
+                  "virtual_ip": null,
+                  "active_directory": null,
+                  "failover_ip": null,
+                  "scvmm": null
+              },
+              "kvm": {},
+              "vsphere": {
+                  "vcenter": null
+              }
+          },
+          "image_resource": true,
+          "name": "PE3_longevity",
+          "region": null,
+          "resize_params": {},
+          "skip_resource_spec_match": false,
+          "force_image_resource": false,
+          "foundation_overrides": "",
+          "register_to_global_pc": true,
+          "skip_cluster_creation": false,
+          "auto_generate_cluster_name": false,
+          "software": {
+              "storage_nodes": {
+                  "hypervisor_version": "branch_symlink",
+                  "hypervisor_url": null
+              },
+              "hypervisor": {
+                  "build_url": null,
+                  "installation_type": null,
+                  "link_speed": null,
+                  "version": "branch_symlink",
+                  "license_coupon": "public",
+                  "license_category": null,
+                  "type": "ahv",
+                  "license_kind": "any"
+              },
+              "compute_nodes": {
+                  "hypervisor_url": null,
+                  "hypervisor_type": null,
+                  "use_non_default_drive_for_ahv_installer": false,
+                  "ahv_installer_version": null,
+                  "hypervisor_version": null,
+                  "use_ahv_installer": false
+              },
+              "nos": {
+                  "package_type": null,
+                  "gbn": null,
+                  "build_url": null,
+                  "redundancy_factor": "default",
+                  "version": "ganges-7.5-stable",
+                  "commit": "ab8f303acca93276142613e43a97fba37c3f2bfd",
+                  "build_type": "release"
+              }
+          }
       },
-      "type": "$REGISTER_PE_PC",
-      "resources": {},
+      "foundation_params": {
+          "foundation_version": "master-13918-4bd95b4e",
+          "log_link": "https://fnd-logs.nucloud.ntnxdpro.com/68df93dc7298f65123e5c223",
+          "use_foundation_vm": false,
+          "ac_tarball_url": "http://endor.dyn.nutanix.com/GoldImages/anaconda_kvm/anaconda.tar.gz",
+          "imaging_info": {
+              "foundation_version": "99.0",
+              "nos_url": "http://endor.dyn.nutanix.com/builds/nos-builds/ganges-7.5-stable/ab8f303acca93276142613e43a97fba37c3f2bfd/1759395693/x86_64/release/tar/nutanix_installer_package-release-ganges-7.5-stable-ab8f303acca93276142613e43a97fba37c3f2bfd-x86_64.tar.gz",
+              "hypervisor_url": "http://endor.dyn.nutanix.com/GoldImages/AHV/11/11.0/11.0-1813/iso/AHV-DVD-x86_64-11.0-1813.iso"
+          },
+          "session_id": "20251003-091736-1",
+          "foundation_vm_ip": null,
+          "fnd_endpoint": "http://10.41.3.56:31840",
+          "fvm_used": false,
+          "foundation_build_url": null,
+          "foundation_overrides": "",
+          "fnd_log_server": "https://fnd-logs.nucloud.ntnxdpro.com",
+          "progress": {
+              "post_cluster_creation": [
+                  {
+                      "status": "All operations completed successfully",
+                      "cluster_name": "PE3_longevity",
+                      "percent_complete": 100.0,
+                      "messages": []
+                  }
+              ],
+              "abort_session": false,
+              "results": null,
+              "session_id": "20251003-091736-1",
+              "imaging_stopped": true,
+              "aggregate_percent_complete": 100.0,
+              "action": "imaging",
+              "clusters": [
+                  {
+                      "status": "All operations completed successfully",
+                      "messages": [],
+                      "cluster_name": "PE3_longevity",
+                      "time_elapsed": 6.0,
+                      "cluster_members": [
+                          "10.117.65.78"
+                      ],
+                      "percent_complete": 100.0,
+                      "time_total": 6
+                  }
+              ],
+              "nodes": [
+                  {
+                      "status": "All operations completed successfully",
+                      "node_serial": "HM22AS020572",
+                      "messages": [],
+                      "time_elapsed": 103.05000000000001,
+                      "ipmi_ip": "10.49.98.27",
+                      "cvm_ip": "10.117.65.78",
+                      "percent_complete": 100.0,
+                      "hypervisor_ip": "10.117.65.74",
+                      "time_total": 103.05000000000001
+                  }
+              ]
+          }
+      },
+      "type": "$NOS_CLUSTER",
+      "resources": {
+          "infra": {
+              "kind": "ON_PREM"
+          },
+          "type": "node_pool",
+          "entries": [
+              "ncm_st"
+          ]
+      },
       "status": "SUCCESS",
       "updated_by": {
-          "$oid": "5ad6ef5e460be1ad1a99940c"
+          "$oid": "5919ab2dfcf8c20748a0a795"
       },
       "tags": [
           "prod",
           "shashi_kiran",
-          "rdm__py3__$PRISM_CENTRAL",
-          "rdm__py3__$REGISTER_PE_PC",
           "rdm__py3__$NOS_CLUSTER",
           "rdm__py3__$LTSS",
           "rdm__py3__$SELENIUM_VM"
       ],
       "is_new": true,
-      "dependencies": [
-          {
-              "$oid": "68db9ee17298f65bc645cb98"
-          },
-          {
-              "$oid": "68db9ee17298f65bc645cb99"
-          }
-      ],
-      "injected": true,
-      "percentage_complete": 100.0,
+      "dependencies": [],
+      "deployed_at": {
+          "$date": 1759486294625
+      },
       "scheduled_deployment": {
-          "$oid": "68db9ee17298f65bc645cb97"
+          "$oid": "68df93dc7298f65123e5c222"
       },
       "stages": [
           "PENDING",
+          "RESOURCES_ALLOCATED",
           "DEPLOY_CONTAINER_CREATED",
           "DEPLOYING_RESOURCE",
-          "REGISTER_PE_TO_PC",
-          "CREATING PE, PC OBJECTS",
-          "EXECUTING_CMD",
+          "NORMALIZING",
+          "VALIDATING",
+          "PRE_IMAGING",
+          "IMAGING",
+          "POST_IMAGING",
+          "IMAGING_SUCCESSFUL",
           "SUCCESS"
       ],
-      "name": "REGISTER_PE_PC_13881",
+      "name": "PE3_longevity",
       "created_at": {
-          "$date": 1759223521952
+          "$date": 1759482844610
       },
       "license_allocation_required": false,
+      "usage_stats": [
+          {
+              "total_nodes_in_pool": 34,
+              "pool": "ncm_st",
+              "total_nodes_allocated": 1
+          }
+      ],
       "client": {
-          "owner": "manojkumar.singhal"
+          "owner": "shashi.kiran"
       },
       "docker": {
           "DEPLOY": {
               "subnet": "phx_prod_release",
-              "container_id": "s46a9qiqvtqz2kmquq6a7aid5",
-              "name": "plugin_REGISTER_PE_PC_68db9ee17298f65bc645cb9a_1759232954",
+              "container_id": "1wg5yf4y1dmtaymwpp3mg2oi9",
+              "name": "plugin_NOS_CLUSTER_68df93dc7298f65123e5c223_1759482938",
               "container_type": "plugin",
               "manager_ip": "tcp://10.41.42.38:2375"
           }
       },
       "_id": {
-          "$oid": "68db9ee17298f65bc645cb9a"
+          "$oid": "68df93dc7298f65123e5c223"
       },
-      "allocated_resource": {}
+      "allocated_resource": {
+          "is_static": false,
+          "username": null,
+          "password": null,
+          "name": "PE3_longevity",
+          "svm_ip": "10.117.65.78",
+          "is_new": true,
+          "prism_password": null,
+          "host": "PE3_longevity",
+          "_id": {
+              "$oid": "68df94349627e56b6e4cfd81"
+          },
+          "type": "$NOS_CLUSTER"
+      }
   },
   "success": true
 }
